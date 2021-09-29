@@ -5,7 +5,6 @@
 <script lang="ts">
 	import pako from "pako"
 	import { browser } from '$app/env';
-	import { writable } from "svelte/store"
 	import Counter from '$lib/Counter.svelte';
 	import type { JWK, KeyLike } from 'jose/types';
 	import { importJWK } from 'jose/key/import'
@@ -23,6 +22,11 @@
 	interface JsonWebKeys {
 		privateKey: JWK
 		publicKey: JWK
+	}
+
+	interface KeySet {
+		privateKey: KeyLike
+		publicKey: KeyLike
 	}
 
 	const encode = TextEncoder.prototype.encode.bind(new TextEncoder())
@@ -68,28 +72,28 @@
 		.setExpirationTime('12weeks')
 		.sign(privateKey)
 
-	const encrypt = (payload: string) => getKeys('RSA-OAEP-256')
-		.then(({ publicKey }) => new CompactEncrypt(encode(payload))
+	const encrypt = (payload: string, publicKey: KeyLike) =>
+		new CompactEncrypt(encode(payload))
 			.setProtectedHeader({
 				alg: 'RSA-OAEP-256',
 				enc: 'A256GCM',
 				cty: 'JWT'
 			})
-			.encrypt(publicKey))
+			.encrypt(publicKey)
 
-	const decrypt = (jwe: string) => getKeys('RSA-OAEP-256')
-		.then(({ privateKey }) => compactDecrypt(jwe, privateKey))
+	const decrypt = (jwe: string, privateKey: KeyLike) =>
+		compactDecrypt(jwe, privateKey)
 
-	const storeDataInJWE = async (data: any, privateKey: KeyLike) => {
-		const jws = await sign(data, privateKey)
-		return encrypt(jws)
+	const storeDataInJWE = async (data: any, keys: KeySet) => {
+		const jws = await sign(data, keys.privateKey)
+		return encrypt(jws, keys.publicKey)
 	}
 
-	const extractAndVerifyJWS = async (jwe: string, publicKey: KeyLike) => {
-		const decrypted = await decrypt(jwe)
+	const extractAndVerifyJWS = async (jwe: string, keys: KeySet) => {
+		const decrypted = await decrypt(jwe, keys.privateKey)
 		const jws = decode(decrypted.plaintext)
 
-		await jwtVerify(jws, publicKey, {
+		await jwtVerify(jws, keys.publicKey, {
 			issuer: "stiqrcode.com",
 			audience: "stiqrcode"
 		})
@@ -108,8 +112,8 @@
 	const decompress = (compressed: string) =>
 		decode(pako.inflateRaw(b45.decode(compressed)))
 
-	const makeQrCode = async (jwe: string, publicKey: KeyLike, secret: KeyLike) => {
-		const jws = await extractAndVerifyJWS(jwe, publicKey)
+	const makeQrCode = async (jwe: string, keys: KeySet, secret: KeyLike) => {
+		const jws = await extractAndVerifyJWS(jwe, keys)
 		const newJWS = await resign(jws, secret)
 		const compressed = compress(newJWS)
 
@@ -135,8 +139,19 @@
 	}
 
 	const doStuff = async () => {
-		const keys = await getKeys("PS256")
+		const cryptoKeys = await getKeys("RSA-OAEP-256")
+		const signingKeys = await getKeys("PS256")
 		const secret = await getSecret("HS256")
+
+		const readingKeys: KeySet = {
+			privateKey: cryptoKeys.privateKey,
+			publicKey: signingKeys.publicKey,
+		}
+
+		const writingKeys: KeySet = {
+			privateKey: signingKeys.privateKey,
+			publicKey: cryptoKeys.publicKey,
+		}
 
 		const jwe = await storeDataInJWE({
 			sub: "E v Brussel",
@@ -148,10 +163,10 @@
 				"b": 0,
 				"s": 0
 			}
-		}, keys.privateKey)
+		}, writingKeys)
 
-		const qrData = await makeQrCode(jwe, keys.publicKey, secret)
-		const payload = await scanAndVerifyQrCode(qrData, secret, keys.publicKey)
+		const qrData = await makeQrCode(jwe, readingKeys, secret)
+		const payload = await scanAndVerifyQrCode(qrData, secret, signingKeys.publicKey)
 
 		console.log(payload)
 	}
