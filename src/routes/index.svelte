@@ -5,7 +5,6 @@
 <script lang="ts">
 	import pako from "pako"
 	import { browser } from '$app/env';
-	import Counter from '$lib/Counter.svelte';
 	import type { JWK, KeyLike } from 'jose/types';
 	import { importJWK } from 'jose/key/import'
 	import { exportJWK } from 'jose/key/export'
@@ -16,7 +15,7 @@
 	import compactDecrypt from 'jose/jwe/compact/decrypt'
 	import generateKeyPair from 'jose/util/generate_key_pair'
 	import generateSecret from 'jose/util/generate_secret'
-	import cbor from 'cbor-web'
+	// import cbor from 'cbor-web'
 	// import CWT from 'cwt-js/lib/index'
 
 	interface JsonWebKeys {
@@ -81,16 +80,13 @@
 			})
 			.encrypt(publicKey)
 
-	const decrypt = (jwe: string, privateKey: KeyLike) =>
-		compactDecrypt(jwe, privateKey)
-
 	const storeDataInJWE = async (data: any, keys: KeySet) => {
 		const jws = await sign(data, keys.privateKey)
 		return encrypt(jws, keys.publicKey)
 	}
 
 	const extractAndVerifyJWS = async (jwe: string, keys: KeySet) => {
-		const decrypted = await decrypt(jwe, keys.privateKey)
+		const decrypted = await compactDecrypt(jwe, keys.privateKey)
 		const jws = decode(decrypted.plaintext)
 
 		await jwtVerify(jws, keys.publicKey, {
@@ -101,7 +97,7 @@
 		return jws
 	}
 
-	const resign = (jwt: string, secret: KeyLike) => new SignJWT({ jwt })
+	const reSign = (jwt: string, secret: KeyLike) => new SignJWT({ jwt })
 		.setProtectedHeader({ alg: 'HS256' })
 		.setIssuer('stiqrcode')
 		.setAudience('stiqrcode')
@@ -114,7 +110,7 @@
 
 	const makeQrCode = async (jwe: string, keys: KeySet, secret: KeyLike) => {
 		const jws = await extractAndVerifyJWS(jwe, keys)
-		const newJWS = await resign(jws, secret)
+		const newJWS = await reSign(jws, secret)
 		const compressed = compress(newJWS)
 
 		return compressed
@@ -193,8 +189,6 @@
 	<h2>
 		try editing <strong>src/routes/index.svelte</strong>
 	</h2>
-
-	<Counter />
 </section>
 
 <style>
