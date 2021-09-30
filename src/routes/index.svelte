@@ -1,5 +1,5 @@
 <script context="module" lang="ts">
-	// export const prerender = true;
+	export const prerender = true;
 </script>
 
 <script lang="ts">
@@ -183,7 +183,7 @@
 			</picture>
 		</div>
 
-		to your new<br />SvelteKit app
+		to your brand new<br />SvelteKit app
 	</h1>
 
 	<h2>
