@@ -20,8 +20,8 @@ function getRandomCode() {
   return codeRef.get()
 }
 
-export const post: RequestHandler<undefined, string> = async request => {
-	const public_key = request.body
+export const post: RequestHandler<undefined, any> = async request => {
+	const { public_key } = request.body
 
   try {
     await importSPKI(public_key, "RSA-OAEP-256")

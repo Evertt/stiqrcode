@@ -37,6 +37,7 @@
 
 <div class="content">
 	<video bind:this={videoElem} />
+	<pre>{result}</pre>
 </div>
 
 <style>

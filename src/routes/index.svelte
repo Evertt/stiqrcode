@@ -147,8 +147,8 @@
 		const spkiPem = await exportSPKI(keys.publicKey)
 
 		const resp = await fetch('/api/v1/register', {
-			method: 'POST', body: spkiPem,
-			headers: { 'Content-Type': 'text/plain' }
+			method: 'POST', body: JSON.stringify({ public_key: spkiPem }),
+			headers: { 'Content-Type': 'application/json' }
 		})
 
 		const { id, code } = await resp.json()
