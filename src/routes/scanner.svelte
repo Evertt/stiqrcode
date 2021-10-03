@@ -14,31 +14,29 @@
 	export const prerender = true;
 </script>
 
+<script lang="ts">
+	import QrScanner from 'qr-scanner'
+
+	QrScanner.WORKER_PATH = '/qr-scanner-worker.min.js'
+
+	let videoElem: HTMLVideoElement
+	let result: string
+
+	$: if (videoElem) {
+		const qrScanner = new QrScanner(videoElem, r => {
+			result = r
+			qrScanner.stop()
+		})
+		qrScanner.start()
+	}
+</script>
+
 <svelte:head>
-	<title>About</title>
+	<title>Scanner</title>
 </svelte:head>
 
 <div class="content">
-	<h1>About this app</h1>
-
-	<p>
-		This is a <a href="https://kit.svelte.dev">SvelteKit</a> app. You can make your own by typing the
-		following into your command line and following the prompts:
-	</p>
-
-	<!-- TODO lose the @next! -->
-	<pre>npm init svelte@next</pre>
-
-	<p>
-		The page you're looking at is purely static HTML, with no client-side interactivity needed.
-		Because of that, we don't need to load any JavaScript. Try viewing the page's source, or opening
-		the devtools network panel and reloading.
-	</p>
-
-	<p>
-		The <a href="/todos">TODOs</a> page illustrates SvelteKit's data loading and form handling. Try using
-		it with JavaScript disabled!
-	</p>
+	<video bind:this={videoElem} />
 </div>
 
 <style>

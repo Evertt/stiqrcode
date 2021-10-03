@@ -4,10 +4,10 @@
 
 <script lang="ts">
 	import pako from "pako"
-	import { browser } from '$app/env';
+	import QRCode from 'qrcode'
 	import type { JWK, KeyLike } from 'jose/types';
-	import { importJWK } from 'jose/key/import'
-	import { exportJWK } from 'jose/key/export'
+	import { importJWK, importPKCS8 } from 'jose/key/import'
+	import { exportJWK, exportPKCS8, exportSPKI } from 'jose/key/export'
 	import SignJWT from 'jose/jwt/sign'
 	import * as b45 from 'base45-ts/src/base45'
 	import jwtVerify from 'jose/jwt/verify'
@@ -15,6 +15,7 @@
 	import compactDecrypt from 'jose/jwe/compact/decrypt'
 	import generateKeyPair from 'jose/util/generate_key_pair'
 	import generateSecret from 'jose/util/generate_secret'
+	import writable from '$lib/store'
 	// import cbor from 'cbor-web'
 	// import CWT from 'cwt-js/lib/index'
 
@@ -30,6 +31,12 @@
 
 	const encode = TextEncoder.prototype.encode.bind(new TextEncoder())
 	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
+
+	const store = writable('stiqrcode', {
+		id: null, code: null, private_key: null, jws: null
+	})
+
+	let canvas: HTMLCanvasElement
 
 	const getKeys = async (alg: string) => {
 		const storageKey = `stiqr-${alg}-keys`
@@ -134,6 +141,82 @@
 		return innerVerified.payload
 	}
 
+	const register = async () => {
+		const keys = await generateKeyPair("RSA-OAEP-256", { extractable: true })
+		const pkcs8Pem = await exportPKCS8(keys.privateKey)
+		const spkiPem = await exportSPKI(keys.publicKey)
+
+		const resp = await fetch('/api/v1/register', {
+			method: 'POST', body: spkiPem,
+			headers: { 'Content-Type': 'text/plain' }
+		})
+
+		const { id, code } = await resp.json()
+
+		$store = { ...$store, id, code, private_key: pkcs8Pem, }
+	}
+
+	const submitTest = async () => {
+		const resp = await fetch('/api/v1/tests', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify({
+				code: $store.code,
+				sub: "E v Brussel",
+				tat: 210927,
+				trs: {
+					"c": 0,
+					"g": 0,
+					"h": 0,
+					"b": 0,
+					"s": 0
+				}
+			})
+		})
+
+		console.log(await resp.json())
+
+		$store.code = null
+	}
+
+	const fetchResults = async () => {
+		let resp = await fetch('/api/v1/test-results', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ id: $store.id })
+		})
+
+		const question = await resp.text()
+		const privateKey = await importPKCS8($store.private_key, "RSA-OAEP-256")
+		const decryptedAswer = await compactDecrypt(question, privateKey)
+		const answer = decode(decryptedAswer.plaintext)
+
+		console.log({ question, answer })
+
+		resp = await fetch('/api/v1/test-results', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ id: $store.id, answer })
+		})
+
+		const jwe = await resp.text()
+		const decryptedJws = await compactDecrypt(jwe, privateKey)
+		$store.jws = decode(decryptedJws.plaintext)
+	}
+
+	const getValidJWS = async () => {
+		const resp = await fetch('/api/v1/sign', {
+			headers: { 'Content-Type': 'text/plain' },
+			method: 'POST', body: $store.jws,
+		})
+
+		const jws = await resp.text()
+		const compressed = compress(jws)
+		await QRCode.toCanvas(canvas, jws)
+	}
+	
 	const doStuff = async () => {
 		const cryptoKeys = await getKeys("RSA-OAEP-256")
 		const signingKeys = await getKeys("PS256")
@@ -166,8 +249,6 @@
 
 		console.log(payload)
 	}
-
-	if (browser) doStuff()
 </script>
 
 <svelte:head>
@@ -175,20 +256,19 @@
 </svelte:head>
 
 <section>
-	<h1>
-		<div class="welcome">
-			<picture>
-				<source srcset="svelte-welcome.webp" type="image/webp" />
-				<img src="svelte-welcome.png" alt="Welcome" />
-			</picture>
-		</div>
+	<button on:click={register}>I'm at the testing institution right now.</button>
 
-		to your brand new<br />SvelteKit app
-	</h1>
+	{#if $store.code}
+		<h2>{$store.code}</h2>
 
-	<h2>
-		try editing <strong>src/routes/index.svelte</strong>
-	</h2>
+		<button on:click={submitTest}>Submit imaginary form.</button>
+	{:else if $store.jws}
+		<button on:click={getValidJWS}>Make QR code</button>
+
+		<canvas bind:this={canvas} />
+	{:else if $store.id}
+		<button on:click={fetchResults}>Get test results</button>
+	{/if}
 </section>
 
 <style>
@@ -198,24 +278,5 @@
 		justify-content: center;
 		align-items: center;
 		flex: 1;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
 	}
 </style>
