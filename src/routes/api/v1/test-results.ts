@@ -21,7 +21,7 @@ export const post: RequestHandler<undefined, Body> = async request => {
   const testData = test.data()
 
   if (!answer) {
-    const answer = (Math.random() + 1).toString(36).substring(7)
+    const answer = (Math.random() + 1).toString(36).substring(2)
     await test.ref.update({ answer, updated_at: serverTimestamp() })
     const publicKey = await importSPKI(testData.public_key, "RSA-OAEP-256")
     const question = await encrypt(answer, publicKey)

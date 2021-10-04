@@ -30,7 +30,10 @@
 			qrScanner.stop()
 		})
 		qrScanner.start()
-		onDestroy(() => qrScanner.stop())
+		onDestroy(() => {
+			qrScanner.stop()
+			qrScanner.destroy()
+		})
 	}
 
 	$: if (jws) fetch('/api/v1/verify', {
