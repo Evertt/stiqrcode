@@ -28,9 +28,9 @@
 		const qrScanner = new QrScanner(videoElem, r => {
 			jws = r
 			qrScanner.stop()
-			onDestroy(() => qrScanner.stop())
 		})
 		qrScanner.start()
+		onDestroy(() => qrScanner.stop())
 	}
 
 	$: if (jws) fetch('/api/v1/verify', {
