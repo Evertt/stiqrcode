@@ -71,26 +71,16 @@
 	}
 
 	const fetchResults = async () => {
-		let resp = await fetch('/api/v1/test-results', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id: $store.id })
-		})
+		if (!$user) return
+		const { getDoc, doc, deleteDoc } = await import("firebase/firestore")
 
-		const question = await resp.text()
+		const test = await getDoc(doc(db(), "tests", $user.uid))
+		const jwe = test.get('results')
+
+		if (!jwe) return
+
+		deleteDoc(test.ref)
 		const privateKey = await importPKCS8($store.private_key, "RSA-OAEP-256")
-		const decryptedAswer = await compactDecrypt(question, privateKey)
-		const answer = decode(decryptedAswer.plaintext)
-
-		console.log({ question, answer })
-
-		resp = await fetch('/api/v1/test-results', {
-			method: 'POST',
-			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ id: $store.id, answer })
-		})
-
-		const jwe = await resp.text()
 		const decryptedJws = await compactDecrypt(jwe, privateKey)
 		$store.jws = [ ...$store.jws, decode(decryptedJws.plaintext) ]
 	}
