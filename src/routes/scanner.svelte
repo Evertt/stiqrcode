@@ -16,6 +16,7 @@
 
 <script lang="ts">
 	import QrScanner from 'qr-scanner'
+	import { onDestroy } from 'svelte'
 
 	QrScanner.WORKER_PATH = '/qr-scanner-worker.min.js'
 
@@ -27,6 +28,7 @@
 		const qrScanner = new QrScanner(videoElem, r => {
 			jws = r
 			qrScanner.stop()
+			onDestroy(() => qrScanner.stop())
 		})
 		qrScanner.start()
 	}
@@ -44,6 +46,7 @@
 
 <div class="content">
 	<video bind:this={videoElem} />
+	<pre>{jws}</pre>
 	<pre>{JSON.stringify(result)}</pre>
 </div>
 
