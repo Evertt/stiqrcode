@@ -214,7 +214,7 @@
 
 		const jws = await resp.text()
 		const compressed = compress(jws)
-		await QRCode.toCanvas(canvas, jws)
+		await QRCode.toCanvas(canvas, compressed)
 	}
 	
 	const doStuff = async () => {
