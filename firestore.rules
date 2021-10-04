@@ -1,8 +1,24 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if false;
+  	match /tests/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+    
+    //Get the user using uid
+    function getTest() {
+     return get(/databases/$(database)/documents/tests/$(request.auth.uid));
+    }
+
+    //Check if user exists
+    function isValidTest(test) {
+      return (test.data != null);
+    }
+    
+    // Check access for your collection 
+    match /codes/{code} {
+    	allow read: if (isValidTest(getTest()) && resource.data.test == getTest().id);
+      allow write: if (isValidTest(getTest()) && request.resource.data.test == getTest().id);
     }
   }
 }
