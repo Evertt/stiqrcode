@@ -18,7 +18,7 @@
   })
 
   const makeQRCode = async (test: string) => {
-    dataURL = "/loading.gif"
+    dataURL = "/tail-spin.svg"
 
 		const resp = await fetch('/api/v1/sign', {
 			headers: { 'Content-Type': 'text/plain' },
@@ -44,7 +44,7 @@
 <style>
   button {
     width: 80vw;
-    max-width: 200px;
+    max-width: 250px;
     margin: 0 auto;
     padding: .25em;
   }
@@ -64,6 +64,10 @@
 
   .qr-code img {
     width: 100%;
-    max-width: 200px;
+    max-width: 250px;
+  }
+
+  .qr-code img[src$="svg"] {
+    max-width: 125px;
   }
 </style>
