@@ -5,7 +5,7 @@
 <script lang="ts">
 	import pako from "pako"
 	import QRCode from 'qrcode'
-	import type { JWK, KeyLike } from 'jose/types';
+	import type { JWK, KeyLike } from 'jose/types'
 	import { importJWK, importPKCS8 } from 'jose/key/import'
 	import { exportJWK, exportPKCS8, exportSPKI } from 'jose/key/export'
 	import SignJWT from 'jose/jwt/sign'
