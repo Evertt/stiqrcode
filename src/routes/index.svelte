@@ -3,31 +3,15 @@
 </script>
 
 <script lang="ts">
-	import pako from "pako"
-	import QRCode from 'qrcode'
 	import user from "$lib/user"
-	import writable from '$lib/store'
+	import state from '$lib/state'
 	import { db } from "$lib/firebase"
 	import { importPKCS8 } from 'jose/key/import'
-	import { encode } from 'base45-ts/src/base45'
 	import compactDecrypt from 'jose/jwe/compact/decrypt'
 	import { exportPKCS8, exportSPKI } from 'jose/key/export'
 	import generateKeyPair from 'jose/util/generate_key_pair'
 
 	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
-
-	interface Store {
-		id?: string
-		code?: string
-		private_key?: string
-		tests: string[]
-	}
-
-	const store = writable<Store>('stiqrcode', { tests: [] })
-
-	let canvas: HTMLCanvasElement
-
-	const compress = (jwt: string) => encode(pako.deflateRaw(jwt))
 
 	const register = async () => {
 		const { setDoc, doc } = await import("firebase/firestore")
@@ -47,7 +31,7 @@
 		const codeRef = doc(db(), "codes", code)
 		await setDoc(codeRef, { test: testRef.id })
 
-		$store = { ...$store, id: $user.uid, code, private_key: pkcs8Pem }
+		$state = { ...$state, id: $user.uid, code, private_key: pkcs8Pem }
 	}
 
 	const submitTest = async () => {
@@ -57,7 +41,7 @@
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify({
-				code: $store.code,
+				code: $state.code,
 				sub: "E v Brussel",
 				tat: 210927,
 				trs: {
@@ -70,7 +54,7 @@
 			})
 		})
 
-		$store.code = null
+		$state.code = null
 	}
 
 	const fetchResults = async () => {
@@ -85,20 +69,9 @@
 
 		deleteDoc(test.ref)
 		deleteUser($user)
-		const privateKey = await importPKCS8($store.private_key, "RSA-OAEP-256")
+		const privateKey = await importPKCS8($state.private_key, "RSA-OAEP-256")
 		const decryptedJws = await compactDecrypt(jwe, privateKey)
-		$store = { tests: [ ...$store.tests, decode(decryptedJws.plaintext) ] }
-	}
-
-	const getValidJWS = async (test: string) => {
-		const resp = await fetch('/api/v1/sign', {
-			headers: { 'Content-Type': 'text/plain' },
-			method: 'POST', body: test,
-		})
-
-		const jws = await resp.text()
-		const compressed = compress(jws)
-		await QRCode.toCanvas(canvas, compressed)
+		$state = { tests: [ ...$state.tests, decode(decryptedJws.plaintext) ] }
 	}
 </script>
 
@@ -111,20 +84,16 @@
 		<button on:click={register}>I'm getting a test now.</button>
 	{/if}
 
-	{#if $store.tests}
-		{#each $store.tests as test}
-			<button on:click={_ => getValidJWS(test)}>Make QR code</button>
-		{/each}
-
-		<canvas bind:this={canvas} />
+	{#if $state.tests}
+		<a sveltekit:prefetch href="/tests">History</a>
 	{/if}
 
-	{#if $store.code}
-		<h2>{$store.code}</h2>
+	{#if $state.code}
+		<h2>{$state.code}</h2>
 
 		<button on:click={submitTest}>Submit imaginary form.</button>
-	{:else if $store.id}
-		<button on:click={fetchResults}>Get test results</button>
+	{:else if $state.id}
+		<button on:click={fetchResults}>Check test results</button>
 	{/if}
 </section>
 
