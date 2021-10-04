@@ -119,12 +119,12 @@
 		<canvas bind:this={canvas} />
 	{/if}
 
-	{#if $store.id}
-		<button on:click={fetchResults}>Get test results</button>
-	{:else if $store.code}
+	{#if $store.code}
 		<h2>{$store.code}</h2>
 
 		<button on:click={submitTest}>Submit imaginary form.</button>
+	{:else if $store.id}
+		<button on:click={fetchResults}>Get test results</button>
 	{/if}
 </section>
 
