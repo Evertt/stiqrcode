@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { db, serverTimestamp } from '$lib/fb'
+import { db, serverTimestamp } from '$lib/firebase-admin'
 import type { KeyLike } from 'jose/types'
 import { importSPKI } from 'jose/key/import'
 import CompactEncrypt from 'jose/jwe/compact/encrypt'

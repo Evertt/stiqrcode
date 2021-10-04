@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { privateKey } from '$lib/signing-keys'
 import { importSPKI } from 'jose/key/import'
-import { db } from '$lib/fb'
+import { db } from '$lib/firebase-admin'
 import type { KeyLike } from 'jose/types'
 import SignJWT from 'jose/jwt/sign'
 import CompactEncrypt from 'jose/jwe/compact/encrypt'
@@ -31,7 +31,8 @@ export const post: RequestHandler = async request => {
 
   const codeDoc = await db.collection('codes').doc(code).get()
 
-  const testRef = codeDoc.get('test')
+  const testId = codeDoc.get('test')
+  const testRef = db.collection('tests').doc(testId)
   await codeDoc.ref.delete()
   const test: typeof codeDoc = await testRef.get()
   const testData = test.data()

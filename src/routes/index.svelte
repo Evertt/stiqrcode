@@ -5,155 +5,46 @@
 <script lang="ts">
 	import pako from "pako"
 	import QRCode from 'qrcode'
-	import type { JWK, KeyLike } from 'jose/types'
-	import { importJWK, importPKCS8 } from 'jose/key/import'
-	import { exportJWK, exportPKCS8, exportSPKI } from 'jose/key/export'
-	import SignJWT from 'jose/jwt/sign'
-	import * as b45 from 'base45-ts/src/base45'
-	import jwtVerify from 'jose/jwt/verify'
-	import CompactEncrypt from 'jose/jwe/compact/encrypt'
-	import compactDecrypt from 'jose/jwe/compact/decrypt'
-	import generateKeyPair from 'jose/util/generate_key_pair'
-	import generateSecret from 'jose/util/generate_secret'
+	import user from "$lib/user"
 	import writable from '$lib/store'
-	// import cbor from 'cbor-web'
-	// import CWT from 'cwt-js/lib/index'
+	import { db } from "$lib/firebase"
+	import { importPKCS8 } from 'jose/key/import'
+	import { encode } from 'base45-ts/src/base45'
+	import compactDecrypt from 'jose/jwe/compact/decrypt'
+	import { exportPKCS8, exportSPKI } from 'jose/key/export'
+	import generateKeyPair from 'jose/util/generate_key_pair'
 
-	interface JsonWebKeys {
-		privateKey: JWK
-		publicKey: JWK
-	}
-
-	interface KeySet {
-		privateKey: KeyLike
-		publicKey: KeyLike
-	}
-
-	const encode = TextEncoder.prototype.encode.bind(new TextEncoder())
 	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
 
-	const store = writable('stiqrcode', {
-		id: null, code: null, private_key: null, jws: null
-	})
+	interface Store {
+		id?: string
+		code?: string
+		private_key?: string
+		jws: string[]
+	}
+
+	const store = writable<Store>('stiqrcode', { jws: [] })
 
 	let canvas: HTMLCanvasElement
 
-	const getKeys = async (alg: string) => {
-		const storageKey = `stiqr-${alg}-keys`
-		let jsonKeys: JsonWebKeys = JSON.parse(localStorage.getItem(storageKey))
-
-		if (jsonKeys) {
-			const privateKey = await importJWK(jsonKeys.privateKey, alg)
-			const publicKey = await importJWK(jsonKeys.publicKey, alg)
-			return { privateKey, publicKey }
-		}
-
-		const keys = await generateKeyPair(alg, { extractable: true })
-		const jsonPrivateKey = await exportJWK(keys.privateKey)
-		const jsonPublicKey = await exportJWK(keys.publicKey)
-		localStorage.setItem(storageKey, JSON.stringify({
-			privateKey: jsonPrivateKey, publicKey: jsonPublicKey
-		}))
-
-		return keys
-	}
-
-	const getSecret = async (alg: string) => {
-		const storageKey = `stiqr-${alg}-secret`
-		let jsonKey: JWK = JSON.parse(localStorage.getItem(storageKey))
-
-		if (jsonKey) return importJWK(jsonKey, alg)
-
-		const secret = await generateSecret(alg, { extractable: true })
-		const jsonSecret = await exportJWK(secret)
-		localStorage.setItem(storageKey, JSON.stringify(jsonSecret))
-
-		return secret
-	}
-
-	const sign = (data: any, privateKey: KeyLike) => new SignJWT(data)
-		.setProtectedHeader({ alg: 'PS256' })
-		.setIssuer('stiqrcode.com')
-		.setAudience('stiqrcode')
-		.setExpirationTime('12weeks')
-		.sign(privateKey)
-
-	const encrypt = (payload: string, publicKey: KeyLike) =>
-		new CompactEncrypt(encode(payload))
-			.setProtectedHeader({
-				alg: 'RSA-OAEP-256',
-				enc: 'A256GCM',
-				cty: 'JWT'
-			})
-			.encrypt(publicKey)
-
-	const storeDataInJWE = async (data: any, keys: KeySet) => {
-		const jws = await sign(data, keys.privateKey)
-		return encrypt(jws, keys.publicKey)
-	}
-
-	const extractAndVerifyJWS = async (jwe: string, keys: KeySet) => {
-		const decrypted = await compactDecrypt(jwe, keys.privateKey)
-		const jws = decode(decrypted.plaintext)
-
-		await jwtVerify(jws, keys.publicKey, {
-			issuer: "stiqrcode.com",
-			audience: "stiqrcode"
-		})
-
-		return jws
-	}
-
-	const reSign = (jwt: string, secret: KeyLike) => new SignJWT({ jwt })
-		.setProtectedHeader({ alg: 'HS256' })
-		.setIssuer('stiqrcode')
-		.setAudience('stiqrcode')
-		.setExpirationTime('60seconds')
-		.sign(secret)
-
-	const compress = (jwt: string) => b45.encode(pako.deflateRaw(jwt))
-	const decompress = (compressed: string) =>
-		decode(pako.inflateRaw(b45.decode(compressed)))
-
-	const makeQrCode = async (jwe: string, keys: KeySet, secret: KeyLike) => {
-		const jws = await extractAndVerifyJWS(jwe, keys)
-		const newJWS = await reSign(jws, secret)
-		const compressed = compress(newJWS)
-
-		return compressed
-	}
-
-	const scanAndVerifyQrCode = async (data: string, secret: KeyLike, publicKey: KeyLike) => {
-		const decompressed = decompress(data)
-
-		const outerVerified = await jwtVerify(decompressed, secret, {
-			issuer: "stiqrcode",
-			audience: "stiqrcode"
-		})
-
-		const nestedJWS = outerVerified.payload.jwt as string
-
-		const innerVerified = await jwtVerify(nestedJWS, publicKey, {
-			issuer: "stiqrcode.com",
-			audience: "stiqrcode"
-		})
-
-		return innerVerified.payload
-	}
+	const compress = (jwt: string) => encode(pako.deflateRaw(jwt))
 
 	const register = async () => {
+		const { setDoc, doc } = await import("firebase/firestore")
+
 		const keys = await generateKeyPair("RSA-OAEP-256", { extractable: true })
 		const pkcs8Pem = await exportPKCS8(keys.privateKey)
 		const spkiPem = await exportSPKI(keys.publicKey)
+		const resp = await fetch('/api/v1/code')
+		const code = await resp.text()
 
-		const resp = await fetch('/api/v1/register', {
-			method: 'POST', body: JSON.stringify({ public_key: spkiPem }),
-			headers: { 'Content-Type': 'application/json' }
-		})
+		const testRef = doc(db(), "tests", $user.uid)
+		await setDoc(testRef, { public_key: spkiPem })
 
-		const { id, code } = await resp.json()
+		const codeRef = doc(db(), "codes", code)
+		await setDoc(codeRef, { test: testRef.id })
 
-		$store = { ...$store, id, code, private_key: pkcs8Pem, }
+		$store = { ...$store, id: $user.uid, code, private_key: pkcs8Pem }
 	}
 
 	const submitTest = async () => {
@@ -175,8 +66,6 @@
 				}
 			})
 		})
-
-		console.log(await resp.json())
 
 		$store.code = null
 	}
@@ -203,51 +92,18 @@
 
 		const jwe = await resp.text()
 		const decryptedJws = await compactDecrypt(jwe, privateKey)
-		$store.jws = decode(decryptedJws.plaintext)
+		$store.jws = [ ...$store.jws, decode(decryptedJws.plaintext) ]
 	}
 
 	const getValidJWS = async () => {
 		const resp = await fetch('/api/v1/sign', {
 			headers: { 'Content-Type': 'text/plain' },
-			method: 'POST', body: $store.jws,
+			method: 'POST', body: $store.jws.at(-1),
 		})
 
 		const jws = await resp.text()
 		const compressed = compress(jws)
 		await QRCode.toCanvas(canvas, compressed)
-	}
-	
-	const doStuff = async () => {
-		const cryptoKeys = await getKeys("RSA-OAEP-256")
-		const signingKeys = await getKeys("PS256")
-		const secret = await getSecret("HS256")
-
-		const readingKeys: KeySet = {
-			privateKey: cryptoKeys.privateKey,
-			publicKey: signingKeys.publicKey,
-		}
-
-		const writingKeys: KeySet = {
-			privateKey: signingKeys.privateKey,
-			publicKey: cryptoKeys.publicKey,
-		}
-
-		const jwe = await storeDataInJWE({
-			sub: "E v Brussel",
-			tat: 210927,
-			trs: {
-				"c": 0,
-				"g": 0,
-				"h": 0,
-				"b": 0,
-				"s": 0
-			}
-		}, writingKeys)
-
-		const qrData = await makeQrCode(jwe, readingKeys, secret)
-		const payload = await scanAndVerifyQrCode(qrData, secret, signingKeys.publicKey)
-
-		console.log(payload)
 	}
 </script>
 
@@ -256,18 +112,20 @@
 </svelte:head>
 
 <section>
-	<button on:click={register}>I'm at the testing institution right now.</button>
+	{#if $user}
+		<button on:click={register}>I'm at the testing institution right now.</button>
 
-	{#if $store.code}
-		<h2>{$store.code}</h2>
+		{#if $store.code}
+			<h2>{$store.code}</h2>
 
-		<button on:click={submitTest}>Submit imaginary form.</button>
-	{:else if $store.jws}
-		<button on:click={getValidJWS}>Make QR code</button>
+			<button on:click={submitTest}>Submit imaginary form.</button>
+		{:else if $store.jws}
+			<button on:click={getValidJWS}>Make QR code</button>
 
-		<canvas bind:this={canvas} />
-	{:else if $store.id}
-		<button on:click={fetchResults}>Get test results</button>
+			<canvas bind:this={canvas} />
+		{:else if $store.id}
+			<button on:click={fetchResults}>Get test results</button>
+		{/if}
 	{/if}
 </section>
 

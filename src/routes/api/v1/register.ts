@@ -1,6 +1,6 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { importSPKI } from 'jose/key/import'
-import { db, serverTimestamp } from '$lib/fb'
+import { db, serverTimestamp } from '$lib/firebase-admin'
 
 function makeCode() {
   let text = ""
