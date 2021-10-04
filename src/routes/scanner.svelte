@@ -15,10 +15,17 @@
 </script>
 
 <script lang="ts">
+	import pako from "pako"
+	import * as b45 from 'base45-ts/src/base45'
 	import QrScanner from 'qr-scanner'
 	import { onDestroy } from 'svelte'
 
 	QrScanner.WORKER_PATH = '/qr-scanner-worker.min.js'
+
+	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
+
+	const decompress = (compressed: string) =>
+		decode(pako.inflateRaw(b45.decode(compressed)))
 
 	let videoElem: HTMLVideoElement
 	let jws: string
@@ -26,7 +33,7 @@
 
 	$: if (videoElem) {
 		const qrScanner = new QrScanner(videoElem, r => {
-			jws = r
+			jws = decompress(r)
 			qrScanner.stop()
 		})
 		qrScanner.start()
