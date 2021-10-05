@@ -52,11 +52,11 @@
 		})
 	}
 
-	const confirm = async () => {
+	const respond = async (confirmed: boolean) => {
 		if (!$state.code) return
 		const { updateDoc, doc } = await import("firebase/firestore")
 		const codeRef = doc(db(), "codes", $state.code)
-		await updateDoc(codeRef, { status: "confirmed" } as Partial<Code>)
+		await updateDoc(codeRef, { status: confirmed ? "confirmed" : null } as Partial<Code>)
 	}
 
 	$: if (code && code.status === "confirmed") {
@@ -77,17 +77,19 @@
 	{#if !code}
 		<img src="/tail-spin.svg" alt="Loading..." />
 	{:else}
-		<p>Please show this code:</p>
-
-		<p>{$state.code}</p>
+		<p class="huge">{$state.code}</p>
 
 		{#if !code.status}
 			<p>
-				Keep this screen open still,<br>
-				we'll need you to confirm in a few moments
+				Show code,<br>
+				and wait to confirm.
 			</p>
 		{:else if code.status === "confirming"}
-			<button on:click={confirm}>Tap to confirm</button>
+			<p>Are you at {code.nameOfTester}?</p>
+			<div class="buttons">
+				<button on:click={_ => respond(false)}>No</button>
+				<button on:click={_ => respond(true)}>Yes</button>
+			</div>
 		{:else if code.status === "confirmed"}
 			<p>Success!</p>
 		{/if}
@@ -101,5 +103,15 @@
 		justify-content: center;
 		align-items: center;
 		flex: 1;
+	}
+
+	.buttons {
+		width: 100%;
+    display: flex;
+    justify-content: space-around;
+	}
+
+	.huge {
+		font-size: 64px;
 	}
 </style>

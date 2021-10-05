@@ -21,26 +21,31 @@
 
   let code: string
   let confirming = false
-  let unsubscribe = () => {}
-  onDestroy(() => unsubscribe())
+  let unsubscribe
+  onDestroy(() => unsubscribe && unsubscribe())
 
-  const confirmCode = async () => {
+  const confirmCode = async (confirm: boolean) => {
     if (!code) return
     confirming = true
 		const { updateDoc, deleteDoc, doc, onSnapshot } = await import("firebase/firestore")
 		const codeRef = doc(db(), "codes", code)
 
-    unsubscribe = onSnapshot(codeRef, snapshot => {
+    unsubscribe ??= onSnapshot(codeRef, snapshot => {
 			const code = snapshot.data() as Code
       if (code.status === "confirmed") {
         form.id = code.test
         confirming = false
         unsubscribe()
         deleteDoc(snapshot.ref)
+      } else if (code.status === null) {
+        confirming = false
       }
 		})
 
-		await updateDoc(codeRef, { status: "confirming" } as Partial<Code>)
+		await updateDoc(codeRef, {
+      status: confirm ? "confirming" : null,
+      nameOfTester: confirm ? "P&G292" : null,
+    } as Partial<Code>)
   }
 
   const submitTest = async () => {
@@ -61,11 +66,26 @@
   <input bind:value={form.dot} placeholder="Date" />
 
   {#if confirming}
-    <img src="/tail-spin.svg" alt="Confirming..." />
+    <img class="spinner" src="/tail-spin.svg" alt="Confirming..." />
+    <button on:click|preventDefault={_ => confirmCode(false)}>Cancel</button>
   {:else if !form.id}
     <input bind:value={code} placeholder="Code" pattern="[A-Z]{4}" />
-    <button on:click={confirmCode}>Confirm code</button>
+    <button on:click|preventDefault={_ => confirmCode(true)}>Confirm code</button>
+  {:else}
+    <button type="submit">Submit form</button>
   {/if}
-
-  <button disabled={!form.id}>Submit form</button>
 </form>
+
+<style>
+	form {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 20px;
+	}
+
+  .spinner {
+    height: 50px;
+  }
+</style>

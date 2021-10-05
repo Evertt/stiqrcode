@@ -33,28 +33,26 @@
 	<title>Home</title>
 </svelte:head>
 
-<section>
-	{#if !$user || $state.code}
-		<a sveltekit:prefetch href="/new-test">
-			{$state.code ? "Show and confirm code" : "Start new test"}
-		</a>
-	{/if}
+{#if !$user || $state.code}
+	<a sveltekit:prefetch href="/start">
+		{$state.code ? "Show and confirm code" : "Start new test"}
+	</a>
+{/if}
 
-	{#if $state.tests.length}
-		<a sveltekit:prefetch href="/tests">History</a>
-	{/if}
+{#if $state.tests.length}
+	<a sveltekit:prefetch href="/history">History</a>
+{/if}
 
-	{#if $state.id}
-		<button on:click={fetchResults}>Check test results</button>
-	{/if}
-</section>
+{#if $state.id}
+	<button on:click={fetchResults}>Check test results</button>
+{/if}
+
+<a sveltekit:prefetch href="/scan">
+	Scan QR code
+</a>
 
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 1;
+	a, button {
+		width: 260px;
 	}
 </style>

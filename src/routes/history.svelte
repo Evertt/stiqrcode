@@ -31,6 +31,8 @@
 	}
 </script>
 
+<a href="/" class="back">←</a>
+
 {#each tests as { jws, date }}
   <button on:click={_ => makeQRCode(jws)}>{date}</button>
 {/each}
@@ -42,11 +44,17 @@
 {/if}
 
 <style>
+  .back {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: transparent;
+    color: #ddd;
+    font-size: 48px;
+  }
+
   button {
-    width: 80vw;
-    max-width: 250px;
-    margin: 0 auto;
-    padding: .25em;
+    width: 260px;
   }
 
   .qr-code {
