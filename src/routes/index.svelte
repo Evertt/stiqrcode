@@ -29,6 +29,14 @@
 
 		alert("Yes! We have your results!\nThey're added to your history.")
 	}
+
+	const reset = async () => {
+		$state = { tests: [] }
+		if ($user) {
+			const { deleteUser } = await import("firebase/auth")
+			await deleteUser($user)
+		}
+	}
 </script>
 
 <svelte:head>
@@ -53,8 +61,19 @@
 	Scan QR code
 </a>
 
+<button class="reset" on:click={reset}>Reset</button>
+
 <style>
 	a, button {
 		width: 260px;
+	}
+
+	.reset {
+		position: fixed;
+		top: .25rem;
+		right: .25rem;
+		width: 100px;
+		color: #ccc;
+		background: #cd1515;
 	}
 </style>
