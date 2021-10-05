@@ -11,7 +11,7 @@
 
   $: tests = $state.tests.reverse().map(jws => {
     const payload = JSON.parse(atob(jws.split('.')[1]))
-    const date = new Date(payload.tat.toString()
+    const date = new Date(payload.dot.toString()
       .replace(/(\d\d)(\d\d)(\d\d)/, "20$1-$2-$3"))
 
     return { date: formatDistanceToNow(date, { addSuffix: true }), jws }

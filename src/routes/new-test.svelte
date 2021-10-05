@@ -49,7 +49,6 @@
 		unsubscribe = onSnapshot(codeRef, snapshot => {
 			if (!snapshot.exists) return
 			code = snapshot.data() as Code
-			console.log({ code })
 		})
 	}
 
