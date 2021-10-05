@@ -27,14 +27,10 @@ const encrypt = (payload: string, publicKey: KeyLike) =>
 // TODO: In an earlier stage, validate the code,
 // replace it with the user id and then delete the code
 export const post: RequestHandler = async request => {
-	const { code, ...form } = request.body as any
+	const { id, ...form } = request.body as any
 
-  const codeDoc = await db.collection('codes').doc(code).get()
-
-  const testId = codeDoc.get('test')
-  const testRef = db.collection('tests').doc(testId)
-  await codeDoc.ref.delete()
-  const test: typeof codeDoc = await testRef.get()
+  const testRef = db.collection('tests').doc(id)
+  const test = await testRef.get()
   const testData = test.data()
 
   const publicKey = await importSPKI(testData.public_key, "RSA-OAEP-256")

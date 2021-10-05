@@ -17,8 +17,8 @@ service cloud.firestore {
     
     // Check access for your collection 
     match /codes/{code} {
-    	allow read: if (isValidTest(getTest()) && resource.data.test == getTest().id);
-      allow write: if (isValidTest(getTest()) && request.resource.data.test == getTest().id);
+      allow read: if true // (isValidTest(getTest()) && resource.data.test == getTest().id);
+      allow write: if true // (isValidTest(getTest()) && request.resource.data.test == getTest().id);
     }
   }
 }
