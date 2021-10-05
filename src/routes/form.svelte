@@ -21,6 +21,8 @@
 
   let code: string
   let confirming = false
+  let unsubscribe = () => {}
+  onDestroy(() => unsubscribe())
 
   const confirmCode = async () => {
     if (!code) return
@@ -28,7 +30,7 @@
 		const { updateDoc, deleteDoc, doc, onSnapshot } = await import("firebase/firestore")
 		const codeRef = doc(db(), "codes", code)
 
-    const unsubscribe = onSnapshot(codeRef, snapshot => {
+    unsubscribe = onSnapshot(codeRef, snapshot => {
 			const code = snapshot.data() as Code
       if (code.status === "confirmed") {
         form.id = code.test
@@ -37,8 +39,6 @@
         deleteDoc(snapshot.ref)
       }
 		})
-
-    onDestroy(() => unsubscribe())
 
 		await updateDoc(codeRef, { status: "confirming" } as Partial<Code>)
   }
