@@ -40,7 +40,7 @@
 		</a>
 	{/if}
 
-	{#if $state.tests}
+	{#if $state.tests.length}
 		<a sveltekit:prefetch href="/tests">History</a>
 	{/if}
 
