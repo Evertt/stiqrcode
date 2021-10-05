@@ -47,8 +47,9 @@
 		const codeRef = doc(db(), "codes", $state.code)
 
 		unsubscribe ??= onSnapshot(codeRef, snapshot => {
-			if (!snapshot.exists) return
+			if (!snapshot.exists || !snapshot.data()) return
 			code = snapshot.data() as Code
+			console.log({ code })
 		})
 	}
 

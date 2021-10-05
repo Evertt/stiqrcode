@@ -1,17 +1,5 @@
 <script context="module">
-	// import { importSPKI } from 'jose/key/import'
-
-	// since there's no dynamic data here, we can prerender
-	// it so that it gets served as a static asset in prod
 	export const prerender = true
-
-	// export const load = async ({ fetch }) => {
-	// 	const resp = await fetch('/api/v1/public-key')
-	// 	const spki = await resp.text()
-	// 	const publicKey = await importSPKI(spki, 'EdDSA')
-
-	// 	return { props: { publicKey } }
-	// }
 </script>
 
 <script lang="ts">
