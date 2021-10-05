@@ -49,12 +49,12 @@
 	</a>
 {/if}
 
-{#if $state.tests.length}
-	<a sveltekit:prefetch href="/history">History</a>
-{/if}
-
 {#if $user}
 	<button on:click={fetchResults}>Check test results</button>
+{/if}
+
+{#if $state.tests.length}
+	<a sveltekit:prefetch href="/history">History</a>
 {/if}
 
 <a sveltekit:prefetch href="/scan">

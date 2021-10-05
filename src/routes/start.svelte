@@ -3,6 +3,7 @@
 </script>
 
 <script lang="ts">
+	import "../check.css"
 	import state from '$lib/state'
 	import type Code from "$lib/code"
 	import { db } from "$lib/firebase"
@@ -64,7 +65,7 @@
 		setTimeout(() => {
 			$state.code = null
 			goto('/')
-		}, 2000)
+		}, 1000)
 	}
 </script>
 
@@ -92,7 +93,10 @@
 				<button on:click={_ => respond(true)}>Yes</button>
 			</div>
 		{:else if code.status === "confirmed"}
-			<p>Success!</p>
+			<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+				<circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+				<path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+			</svg>
 		{/if}
 	{/if}
 </section>
