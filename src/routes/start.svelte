@@ -12,8 +12,8 @@
 	import generateKeyPair from 'jose/util/generate_key_pair'
 
 	let code: Code
-	let unsubscribe = () => {}
-	onDestroy(() => unsubscribe())
+	let unsubscribe
+	onDestroy(() => unsubscribe && unsubscribe())
 
 	onMount(async () => {
 		if ($state.code) return waitToConfirm()
@@ -35,7 +35,7 @@
 		const codeRef = doc(db(), "codes", code)
 		await setDoc(codeRef, { test: testRef.id } as Code)
 
-		$state = { ...$state, id: user.uid, code, private_key: pkcs8Pem }
+		$state = { ...$state, code, private_key: pkcs8Pem }
 
 		waitToConfirm()
 	})
@@ -46,7 +46,7 @@
 
 		const codeRef = doc(db(), "codes", $state.code)
 
-		unsubscribe = onSnapshot(codeRef, snapshot => {
+		unsubscribe ??= onSnapshot(codeRef, snapshot => {
 			if (!snapshot.exists) return
 			code = snapshot.data() as Code
 		})
@@ -61,9 +61,9 @@
 
 	$: if (code && code.status === "confirmed") {
 		setTimeout(() => {
-			goto('/')
 			$state.code = null
-		}, 1000)
+			goto('/')
+		}, 2000)
 	}
 </script>
 

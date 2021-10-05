@@ -19,13 +19,15 @@
 		const test = await getDoc(doc(db(), "tests", $user.uid))
 		const jwe = test.get('results')
 
-		if (!jwe) return
+		if (!jwe) return alert("No results yet")
 
 		deleteDoc(test.ref)
 		deleteUser($user)
 		const privateKey = await importPKCS8($state.private_key, "RSA-OAEP-256")
 		const decryptedJws = await compactDecrypt(jwe, privateKey)
 		$state = { tests: [ ...$state.tests, decode(decryptedJws.plaintext) ] }
+
+		alert("Yes! We have your results!\nThey're added to your history.")
 	}
 </script>
 
@@ -43,7 +45,7 @@
 	<a sveltekit:prefetch href="/history">History</a>
 {/if}
 
-{#if $state.id}
+{#if $user}
 	<button on:click={fetchResults}>Check test results</button>
 {/if}
 
