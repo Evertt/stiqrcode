@@ -32,23 +32,32 @@
 
 	let videoElem: HTMLVideoElement
 	let result: any
+	let qrScanner: QrScanner
 
-	$: if (videoElem) {
-		const qrScanner = new QrScanner(videoElem, async r => {
+	const destroyScanner = () => {
+		if (!qrScanner) return
+		qrScanner.stop()
+		qrScanner.destroy()
+		qrScanner = null
+	}
+
+	const initScanner = async () => {
+		if (!videoElem) return
+		destroyScanner()
+		qrScanner = new QrScanner(videoElem, async r => {
 			const jws = decompress(r)
 			const verified = await jwtVerify(jws, publicKey, {
 				issuer: "stiqrcode.com",
 				audience: "stiqrcode.app"
 			})
 			result = verified.payload
-			qrScanner.stop()
+			destroyScanner()
 		})
 		qrScanner.start()
-		onDestroy(() => {
-			qrScanner.stop()
-			qrScanner.destroy()
-		})
 	}
+
+	$: videoElem && initScanner()
+	onDestroy(destroyScanner)
 </script>
 
 <svelte:head>
