@@ -16,7 +16,7 @@
 		const { deleteUser } = await import("firebase/auth")
 		const { getDoc, doc, deleteDoc } = await import("firebase/firestore")
 
-		const test = await getDoc(doc(db(), "tests", $user.uid))
+		const test = await getDoc(doc($db, "tests", $user.uid))
 		const jwe = test.get('results')
 
 		if (!jwe) return alert("No results yet")
@@ -33,8 +33,10 @@
 	const reset = async () => {
 		$state = { tests: [] }
 		if ($user) {
+			const { doc, deleteDoc } = await import("firebase/firestore")
 			const { deleteUser } = await import("firebase/auth")
-			await deleteUser($user)
+			deleteDoc(doc($db, "tests", $user.uid))
+			deleteUser($user)
 		}
 	}
 </script>

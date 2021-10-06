@@ -28,7 +28,7 @@
     if (!code) return
     confirming = true
 		const { updateDoc, deleteDoc, doc, onSnapshot } = await import("firebase/firestore")
-		const codeRef = doc(db(), "codes", code)
+		const codeRef = doc($db, "codes", code)
 
     unsubscribe ??= onSnapshot(codeRef, snapshot => {
 			const code = snapshot.data() as Code

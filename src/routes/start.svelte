@@ -30,10 +30,10 @@
 		const resp = await fetch('/api/v1/code')
 		const code = await resp.text()
 
-		const testRef = doc(db(), "tests", user.uid)
+		const testRef = doc($db, "tests", user.uid)
 		await setDoc(testRef, { public_key: spkiPem })
 
-		const codeRef = doc(db(), "codes", code)
+		const codeRef = doc($db, "codes", code)
 		await setDoc(codeRef, { test: testRef.id } as Code)
 
 		$state = { ...$state, code, private_key: pkcs8Pem }
@@ -45,19 +45,18 @@
 		if (!$state.code) return
 		const { doc, onSnapshot } = await import("firebase/firestore")
 
-		const codeRef = doc(db(), "codes", $state.code)
+		const codeRef = doc($db, "codes", $state.code)
 
 		unsubscribe ??= onSnapshot(codeRef, snapshot => {
 			if (!snapshot.exists || !snapshot.data()) return
 			code = snapshot.data() as Code
-			console.log({ code })
 		})
 	}
 
 	const respond = async (confirmed: boolean) => {
 		if (!$state.code) return
 		const { updateDoc, doc } = await import("firebase/firestore")
-		const codeRef = doc(db(), "codes", $state.code)
+		const codeRef = doc($db, "codes", $state.code)
 		await updateDoc(codeRef, { status: confirmed ? "confirmed" : null } as Partial<Code>)
 	}
 
@@ -65,7 +64,7 @@
 		setTimeout(() => {
 			$state.code = null
 			goto('/')
-		}, 1000)
+		}, 2000)
 	}
 </script>
 
