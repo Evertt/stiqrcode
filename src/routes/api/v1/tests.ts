@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { privateKey } from '$lib/signing-keys'
+import { secret } from '$lib/signing-keys'
 import { importSPKI } from 'jose/key/import'
 import { db } from '$lib/firebase-admin'
 import type { KeyLike } from 'jose/types'
@@ -9,7 +9,7 @@ import CompactEncrypt from 'jose/jwe/compact/encrypt'
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder())
 
 const sign = (data: any, privateKey: KeyLike) => new SignJWT(data)
-  .setProtectedHeader({ alg: 'EdDSA' })
+  .setProtectedHeader({ alg: 'HS256' })
   .setIssuer('stiqrcode.com')
   .setAudience('stiqrcode.com')
   .setExpirationTime('1year')
@@ -34,7 +34,7 @@ export const post: RequestHandler = async request => {
   const testData = test.data()
 
   const publicKey = await importSPKI(testData.public_key, "RSA-OAEP-256")
-  const jws = await sign(form, await privateKey())
+  const jws = await sign(form, await secret())
   const jwe = await encrypt(jws, publicKey)
 
   await testRef.update({ results: jwe })
