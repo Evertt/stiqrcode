@@ -2,8 +2,8 @@
 
 interface User {
   uid: string
-  email: string
-  name: string
+  email?: string
+  displayName?: string
 }
 
 interface Locals {

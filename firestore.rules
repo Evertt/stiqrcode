@@ -1,16 +1,20 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-  	match /tests/{userId} {
+    match /tests/{userId} {
       allow read, write: if request.auth.uid == userId || resource.data.tester == request.auth.uid;
     }
     
+    match /testers/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+    
     function getTest() {
-     return get(/databases/$(database)/documents/tests/$(request.auth.uid));
+      return get(/databases/$(database)/documents/tests/$(request.auth.uid));
     }
     
     function getTester() {
-     return get(/databases/$(database)/documents/testers/$(request.auth.uid));
+      return get(/databases/$(database)/documents/testers/$(request.auth.uid));
     }
 
     function isValid(doc) {

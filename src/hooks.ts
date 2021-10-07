@@ -38,5 +38,5 @@ const handleMethodSpoofing: Handle<Locals> = async ({ request, resolve }) => {
 export const handle = sequence(handleMethodSpoofing, authenticateUser)
 
 export const getSession: GetSession<Locals, unknown, Session> = request => {
-	return request.locals
+	return { ...request.locals }
 }

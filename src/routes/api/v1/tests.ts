@@ -26,12 +26,16 @@ const encrypt = (payload: string, publicKey: KeyLike) =>
 // TODO: Validate form
 // TODO: In an earlier stage, validate the code,
 // replace it with the user id and then delete the code
-export const post: RequestHandler = async request => {
+export const post: RequestHandler<Locals> = async request => {
 	const { id, ...form } = request.body as any
 
   const testRef = db.collection('tests').doc(id)
   const test = await testRef.get()
   const testData = test.data()
+
+  if (testData.tester !== request.locals.user?.uid) {
+    return { status: 401, error: "Unauthorized" }
+  }
 
   const publicKey = await importSPKI(testData.public_key, "RSA-OAEP-256")
   const jws = await sign(form, await secret())

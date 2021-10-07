@@ -11,7 +11,6 @@
 		height: 100vh;
 		display: flex;
 		margin: 0 auto;
-		max-width: 1024px;
 		align-items: center;
 		flex-direction: column;
 		justify-content: center;
@@ -38,6 +37,6 @@
 	}
 
 	:global(p) {
-		color: #ddd;
+		color: #333;
 	}
 </style>

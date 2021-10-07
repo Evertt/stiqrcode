@@ -20,8 +20,8 @@ export const db: Readable<Firestore> = service(() => derived(app, async ($app, s
 
 export const auth: Readable<Auth> = service(() => derived(app, async ($app, set) => {
   if (!browser || !$app) return
-  const { getAuth } = await import("firebase/auth")
-  set(getAuth())
+  const { initializeAuth, indexedDBLocalPersistence } = await import("firebase/auth")
+  set(initializeAuth($app, {persistence: indexedDBLocalPersistence}))
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function

@@ -15,11 +15,6 @@
 	import { browser } from "$app/env"
 	import { sveltex } from 'sveltex'
 	sveltex()
-
-	// Install servicerWorker if supported on sign-in/sign-up page.
-	if (browser && 'serviceWorker' in navigator) {
-		navigator.serviceWorker.register('/service-worker.js', {scope: '/'});
-	}
 </script>
 
 <slot />

@@ -1,11 +1,17 @@
-import { initializeApp } from "firebase/app"
 import firebaseConfig from "$lib/firebase-config"
-import { getAuth, onAuthStateChanged, getIdToken } from "firebase/auth"
+import { initializeApp } from "firebase/app"
+import {
+  initializeAuth,
+  indexedDBLocalPersistence,
+  onAuthStateChanged,
+  getIdToken
+} from "firebase/auth"
 
-declare const self: ServiceWorkerGlobalScope;
+// Initialize the Firebase app in the service worker script.
+const app = initializeApp(firebaseConfig)
+const auth = initializeAuth(app, {persistence: indexedDBLocalPersistence})
 
-initializeApp(firebaseConfig)
-const auth = getAuth()
+declare const self: ServiceWorkerGlobalScope
 
 /**
  * Returns a promise that resolves with an ID token if available.
@@ -37,12 +43,12 @@ const getOriginFromUrl = (url: string) => {
 }
 
 // Get underlying body if available. Works for text and json bodies.
-const getBodyContent = (req: Request) => {
-  if (req.method !== 'GET') return
-  if (req.headers.get('Content-Type').indexOf('json') === -1)
-    return req.text()
+const getBodyContent = async (req: Request) => {
+  if (req.method === 'GET') return
+  if (req.headers.get('Content-Type')?.indexOf('json') > 0)
+    return req.json().then(JSON.stringify)
 
-  return req.json().then(JSON.stringify)
+  return req.text()
 }
 
 self.addEventListener('fetch', (event: FetchEvent) => {
@@ -73,7 +79,7 @@ self.addEventListener('fetch', (event: FetchEvent) => {
             cache: req.cache,
             redirect: req.redirect,
             referrer: req.referrer,
-            body,
+            body: req.method === 'GET' ? undefined : body,
             // bodyUsed: req.bodyUsed,
             // context: req.context
           })
@@ -94,5 +100,5 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 })
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(self.clients.claim())
 })
