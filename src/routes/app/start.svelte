@@ -3,17 +3,16 @@
 </script>
 
 <script lang="ts">
-	import "../check.css"
+	import "../../check.css"
 	import state from '$lib/state'
-	import type Code from "$lib/code"
-	import { db } from "$lib/firebase"
 	import { goto } from '$app/navigation'
+	import { db, user } from "$lib/firebase"
 	import { onMount, onDestroy } from "svelte"
 	import { exportPKCS8, exportSPKI } from 'jose/key/export'
 	import generateKeyPair from 'jose/util/generate_key_pair'
 
 	let code: Code
-	let unsubscribe
+	let unsubscribe: () => void | undefined
 	onDestroy(() => unsubscribe && unsubscribe())
 
 	onMount(async () => {
@@ -54,16 +53,20 @@
 	}
 
 	const respond = async (confirmed: boolean) => {
-		if (!$state.code) return
+		if (!$state.code || !$user) return
 		const { updateDoc, doc } = await import("firebase/firestore")
+
 		const codeRef = doc($db, "codes", $state.code)
 		await updateDoc(codeRef, { status: confirmed ? "confirmed" : null } as Partial<Code>)
+		
+		const testRef = doc($db, "tests", $user.uid)
+		await updateDoc(testRef, { tester: confirmed ? code.tester_id : null })
 	}
 
 	$: if (code && code.status === "confirmed") {
 		setTimeout(() => {
 			$state.code = null
-			goto('/')
+			goto('./')
 		}, 2000)
 	}
 </script>
@@ -86,7 +89,7 @@
 				and wait to confirm.
 			</p>
 		{:else if code.status === "confirming"}
-			<p>Are you at {code.nameOfTester}?</p>
+			<p>Are you at {code.tester_name}?</p>
 			<div class="buttons">
 				<button on:click={_ => respond(false)}>No</button>
 				<button on:click={_ => respond(true)}>Yes</button>

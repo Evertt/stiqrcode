@@ -3,7 +3,7 @@ import { privateKey, secret } from "$lib/signing-keys"
 import jwtVerify from 'jose/jwt/verify'
 import SignJWT from 'jose/jwt/sign'
 
-export const post: RequestHandler<undefined, string> = async request => {
+export const post: RequestHandler<Locals, string> = async request => {
   const jws = request.body
 
   try {

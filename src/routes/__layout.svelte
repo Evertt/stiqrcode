@@ -1,26 +1,25 @@
-<script lang="ts">
-	import '../app.css'
-	import { sveltex } from 'sveltex'
-	sveltex()
+<script context="module" lang="ts">
+	import type { Load } from '@sveltejs/kit'
+	import { initI18n } from '../i18n/i18n-svelte'
+
+	export const load: Load = async ({ page, fetch, session }) => {
+		// const acceptLanguageHeaderDetector = initAcceptLanguageHeaderDetector(req)
+		// const detectedLocale = detectLocale('en', ['nl', 'en'], detector)
+		await initI18n('en')
+		return {}
+	}
 </script>
 
-<main>
-	<slot />
-</main>
+<script lang="ts">
+	import '../app.css'
+	import { browser } from "$app/env"
+	import { sveltex } from 'sveltex'
+	sveltex()
 
-<style>
-	main {
-		flex: 1;
-		gap: 20px;
-		width: 100vw;
-		padding: 1rem;
-		height: 100vh;
-		display: flex;
-		margin: 0 auto;
-		max-width: 1024px;
-		align-items: center;
-		box-sizing: border-box;
-		flex-direction: column;
-		justify-content: center;
+	// Install servicerWorker if supported on sign-in/sign-up page.
+	if (browser && 'serviceWorker' in navigator) {
+		navigator.serviceWorker.register('/service-worker.js', {scope: '/'});
 	}
-</style>
+</script>
+
+<slot />

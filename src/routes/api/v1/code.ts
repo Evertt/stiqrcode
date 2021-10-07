@@ -1,7 +1,7 @@
 import type { RequestHandler } from '@sveltejs/kit'
 import { db } from '$lib/firebase-admin'
 
-let codes: Record<string, any> = {}
+let codes: Record<string, Code> = {}
 
 db.collection('codes').onSnapshot(snapshot => {
   const newCodes = {}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { config } from 'firebase-functions'
 import { importPKCS8, importSPKI, importJWK } from 'jose/key/import'
 

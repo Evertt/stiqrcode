@@ -2,13 +2,13 @@ import type { RequestHandler } from '@sveltejs/kit'
 import { secret } from '$lib/signing-keys'
 import { importSPKI } from 'jose/key/import'
 import { db } from '$lib/firebase-admin'
-import type { KeyLike } from 'jose/types'
+import type { KeyLike, JWTPayload } from 'jose/types'
 import SignJWT from 'jose/jwt/sign'
 import CompactEncrypt from 'jose/jwe/compact/encrypt'
 
 const encode = TextEncoder.prototype.encode.bind(new TextEncoder())
 
-const sign = (data: any, privateKey: KeyLike) => new SignJWT(data)
+const sign = (data: JWTPayload, privateKey: KeyLike) => new SignJWT(data)
   .setProtectedHeader({ alg: 'HS256' })
   .setIssuer('stiqrcode.com')
   .setAudience('stiqrcode.com')

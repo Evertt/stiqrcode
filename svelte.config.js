@@ -10,12 +10,6 @@ const config = {
 	kit: {
 		adapter: firebase(),
 		target: '#svelte'
-	},
-
-	vite: {
-    optimizeDeps: {
-			include: [ 'pako', 'cwt-js' ]
-    }
 	}
 };
 

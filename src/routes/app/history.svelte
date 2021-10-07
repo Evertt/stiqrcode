@@ -1,3 +1,7 @@
+<script context="module" lang="ts">
+	export const prerender = true
+</script>
+
 <script lang="ts">
   import pako from "pako"
 	import QRCode from 'qrcode'
@@ -49,7 +53,7 @@
     top: 0;
     left: 0;
     background: transparent;
-    color: #ddd;
+    color: #333;
     font-size: 48px;
   }
 

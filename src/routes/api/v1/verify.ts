@@ -2,7 +2,7 @@ import type { RequestHandler } from '@sveltejs/kit'
 import { publicKey } from "$lib/signing-keys"
 import jwtVerify from 'jose/jwt/verify'
 
-export const post: RequestHandler<undefined, string> = async request => {
+export const post: RequestHandler<Locals, string> = async request => {
   const jws = request.body
 
   try {

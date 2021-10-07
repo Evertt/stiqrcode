@@ -15,7 +15,7 @@ const encrypt = (payload: string, publicKey: KeyLike) =>
     .encrypt(publicKey)
 
 type Body = { id: string, answer: string }
-export const post: RequestHandler<undefined, Body> = async request => {
+export const post: RequestHandler<Locals, Body> = async request => {
   const { id, answer } = request.body
   const test = await db.collection('tests').doc(id).get()
   const testData = test.data()

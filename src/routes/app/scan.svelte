@@ -1,8 +1,6 @@
 <script context="module" lang="ts">
 	import type { Load } from '@sveltejs/kit'
 
-	// export const prerender = true
-
 	export const load: Load = async ({ fetch }) => {
 		const resp = await fetch('/api/v1/public-key')
 		const spkiPem = await resp.text()
@@ -65,6 +63,7 @@
 </svelte:head>
 
 <div class="content">
+	<!-- svelte-ignore a11y-media-has-caption -->
 	<video bind:this={videoElem} />
 	<pre>{JSON.stringify(result)}</pre>
 </div>
