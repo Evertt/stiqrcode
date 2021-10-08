@@ -19,7 +19,7 @@
 		font-family: sans-serif;
 	}
 
-	:global(a), :global(input), :global(button) {
+	main :global(a), main :global(input), main :global(button) {
 		display: block;
 		font-size: 28px;
 		text-align: center;
@@ -27,7 +27,7 @@
 		box-sizing: border-box;
 	}
 
-	:global(a), :global(button) {
+	main :global(a), main :global(button) {
 		border-radius: 5px;
 		background: #a0bbbb;
 		border: none;
@@ -36,7 +36,7 @@
 		color: #333;
 	}
 
-	:global(p) {
+	main :global(p) {
 		color: #333;
 	}
 </style>
