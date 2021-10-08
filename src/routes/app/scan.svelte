@@ -10,12 +10,14 @@
 
 <script lang="ts">
 	import pako from "pako"
-	import * as b45 from 'base45-ts/src/base45'
 	import QrScanner from 'qr-scanner'
 	import { onDestroy } from 'svelte'
 	import jwtVerify from 'jose/jwt/verify'
+	import transform from "$lib/jwt-transform"
+	import * as b45 from 'base45-ts/src/base45'
 	import { importSPKI } from 'jose/key/import'
 	import type { KeyLike } from 'jose/key/import'
+	import BackButton from "$lib/BackButton.svelte"
 
 	QrScanner.WORKER_PATH = '/qr-scanner-worker.min.js'
 
@@ -29,7 +31,7 @@
 	$: spkiPem && importSPKI(spkiPem, "ES256").then(pk => publicKey = pk)
 
 	let videoElem: HTMLVideoElement
-	let result: any
+	let result: Result
 	let qrScanner: QrScanner
 
 	const destroyScanner = () => {
@@ -48,7 +50,7 @@
 				issuer: "stiqrcode.com",
 				audience: "stiqrcode.app"
 			})
-			result = verified.payload
+			result = transform(verified.payload as any)
 			destroyScanner()
 		})
 		qrScanner.start()
@@ -62,10 +64,29 @@
 	<title>Scanner</title>
 </svelte:head>
 
+<BackButton />
+
 <div class="content">
-	<!-- svelte-ignore a11y-media-has-caption -->
-	<video bind:this={videoElem} />
-	<pre>{JSON.stringify(result)}</pre>
+	{#if result}
+		<table class:positive={result.result}>
+			<tr>
+				<td>Name</td>
+				<td>{result.name}</td>
+			</tr>
+			<tr>
+				<td>Date</td>
+				<td>{result.tested_around}</td>
+			</tr>
+			<tr>
+				<td>Result</td>
+				<td>{result.result ? "positive" : "negative"}</td>
+			</tr>
+		</table>
+	{:else}
+		<!-- svelte-ignore a11y-media-has-caption -->
+		<video bind:this={videoElem} />
+		<span>Tip: closer is not always better</span>
+	{/if}
 </div>
 
 <style>
@@ -73,9 +94,22 @@
 		width: 100%;
 		max-width: var(--column-width);
 		margin: var(--column-margin-top) auto 0 auto;
+		font-size: 22px !important;
 	}
 
 	video {
 		width: 100%;
+	}
+
+	table {
+		border-collapse: collapse;
+
+		td {
+			padding: 1rem .5rem;
+		}
+
+		td:first-child::after {
+			content: ":"
+		}
 	}
 </style>

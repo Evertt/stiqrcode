@@ -4,19 +4,22 @@
 </script>
 
 <script lang="ts">
-  interface Form {
-    id: string|null
-    sub: string|null
-    dot: number|null
-  }
-
-  let form: Form = {
+  let form = {
     id: null,
     sub: null,
-    dot: null
+    dot: null,
+    res: {
+      c: 0,
+      s: 0,
+      g: 0,
+      h: 0,
+      b: 0,
+    }
   }
 
   const submitTest = async () => {
+    form.dot = parseInt(form.dot)
+    
     const resp = await fetch('/api/v1/tests', {
       method: 'POST', body: JSON.stringify(form),
       headers: { 'Content-Type': 'application/json' }

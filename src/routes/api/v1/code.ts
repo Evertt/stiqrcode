@@ -1,13 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { db } from '$lib/firebase-admin'
-
-let codes: Record<string, Code> = {}
-
-db.collection('codes').onSnapshot(snapshot => {
-  const newCodes = {}
-  snapshot.forEach(doc => newCodes[doc.id] = doc.data())
-  codes = newCodes
-})
+import { codes } from "$store"
 
 function makeRandomCode() {
   let text = ""
@@ -22,7 +14,7 @@ function makeRandomCode() {
 function getNewCode() {
   let code = makeRandomCode()
 
-  while (codes[code])
+  while (codes(code))
     code = makeRandomCode()
 
   return code

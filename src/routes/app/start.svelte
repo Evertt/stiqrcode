@@ -8,6 +8,7 @@
 	import { goto } from '$app/navigation'
 	import { db, user } from "$lib/firebase"
 	import { onMount, onDestroy } from "svelte"
+	import BackButton from "$lib/BackButton.svelte"
 	import { exportPKCS8, exportSPKI } from 'jose/key/export'
 	import generateKeyPair from 'jose/util/generate_key_pair'
 
@@ -21,7 +22,7 @@
 		const { setDoc, doc } = await import("firebase/firestore")
 		const { getAuth, signInAnonymously } = await import("firebase/auth")
 
-  	const { user } = await signInAnonymously(getAuth())
+		const { user } = await signInAnonymously(getAuth())
 
 		const keys = await generateKeyPair("RSA-OAEP-256", { extractable: true })
 		const pkcs8Pem = await exportPKCS8(keys.privateKey)
@@ -77,6 +78,8 @@
 	</title>
 </svelte:head>
 
+<BackButton />
+
 <section>
 	{#if !code}
 		<img src="/tail-spin.svg" alt="Loading..." />
@@ -114,8 +117,8 @@
 
 	.buttons {
 		width: 100%;
-    display: flex;
-    justify-content: space-around;
+		display: flex;
+		justify-content: space-around;
 	}
 
 	.huge {

@@ -1,4 +1,4 @@
-import { users } from "./store/users"
+import { users } from "$store"
 import type { Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 import { app as admin } from "$lib/firebase-admin"
@@ -17,7 +17,7 @@ const authenticateUser: Handle<Locals> = async ({ request, resolve }) => {
 	// User already logged in. Redirect to profile page.
 	try {
 		const { uid } = await admin.auth().verifyIdToken(idToken)
-		request.locals.user = { uid, ...users(uid) }
+		request.locals.user = { id: uid, ...users(uid) }
 	} catch(_) {
 		// ignore error
 	}

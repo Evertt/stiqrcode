@@ -1,7 +1,7 @@
 /// <reference types="@sveltejs/kit" />
 
 interface User {
-  uid: string
+  id: string
   email?: string
   displayName?: string
 }
@@ -11,10 +11,18 @@ interface Locals {
 }
 
 interface Code {
+  id: string
   test: string
   tester_id?: string
   tester_name?: string
   status?: "confirming"|"confirmed"
+}
+
+interface Result {
+  date: Date
+  name: string
+  result: boolean
+  tested_around: string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface

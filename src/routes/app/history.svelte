@@ -3,26 +3,26 @@
 </script>
 
 <script lang="ts">
-  import pako from "pako"
+	import pako from "pako"
 	import QRCode from 'qrcode'
-  import state from '$lib/state'
+	import state from '$lib/state'
+	import transform from "$lib/jwt-transform"
 	import { encode } from 'base45-ts/src/base45'
-  import { formatDistanceToNow } from 'date-fns'
+	import BackButton from "$lib/BackButton.svelte"
 
-  let dataURL: string
+	let dataURL: string
 
-  const compress = (jwt: string) => encode(pako.deflateRaw(jwt))
+	const compress = (jwt: string) => encode(pako.deflateRaw(jwt))
 
-  $: tests = $state.tests.reverse().map(jws => {
-    const payload = JSON.parse(atob(jws.split('.')[1]))
-    const date = new Date(payload.dot.toString()
-      .replace(/(\d\d)(\d\d)(\d\d)/, "20$1-$2-$3"))
+	$: tests = $state.tests.reverse().map(jws => {
+		const payload = JSON.parse(atob(jws.split('.')[1]))
+		const result = transform(payload)
 
-    return { date: formatDistanceToNow(date, { addSuffix: true }), jws }
-  })
+		return { date: result.tested_around, jws }
+	})
 
-  const makeQRCode = async (test: string) => {
-    dataURL = "/tail-spin.svg"
+	const makeQRCode = async (test: string) => {
+		dataURL = "/tail-spin.svg"
 
 		const resp = await fetch('/api/v1/sign', {
 			headers: { 'Content-Type': 'text/plain' },
@@ -35,51 +35,42 @@
 	}
 </script>
 
-<a href="/" class="back">←</a>
+<BackButton />
 
 {#each tests as { jws, date }}
-  <button on:click={_ => makeQRCode(jws)}>{date}</button>
+	<button on:click={_ => makeQRCode(jws)}>{date}</button>
 {/each}
 
 {#if dataURL}
-  <div class="qr-code" on:click={_ => dataURL = null}>
-    <img src={dataURL} alt="QR Code" />
-  </div>
+	<div class="qr-code" on:click={_ => dataURL = null}>
+		<img src={dataURL} alt="QR Code" />
+	</div>
 {/if}
 
 <style>
-  .back {
-    position: fixed;
-    top: 0;
-    left: 0;
-    background: transparent;
-    color: #333;
-    font-size: 48px;
-  }
+	button {
+		width: 260px;
+	}
 
-  button {
-    width: 260px;
-  }
+	.qr-code {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		display: flex;
+		padding: 0.5em;
+		align-items: center;
+		justify-content: center;
+		background: rgba(0,0,0,0.5)
+	}
 
-  .qr-code {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    padding: 0.5em;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.5)
-  }
+	.qr-code img {
+		width: 100%;
+		max-width: 250px;
+	}
 
-  .qr-code img {
-    width: 100%;
-    max-width: 250px;
-  }
-
-  .qr-code img[src$="svg"] {
-    max-width: 125px;
-  }
+	.qr-code img[src$="svg"] {
+		max-width: 125px;
+	}
 </style>

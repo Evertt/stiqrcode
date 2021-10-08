@@ -2,7 +2,7 @@
 	<slot />
 </main>
 
-<style>
+<style lang="postcss">
 	main {
 		flex: 1;
 		gap: 20px;
@@ -17,26 +17,28 @@
 		font-size: 28px;
 		background: #e0ffff;
 		font-family: sans-serif;
-	}
 
-	main :global(a), main :global(input), main :global(button) {
-		display: block;
-		font-size: 28px;
-		text-align: center;
-		padding: .25rem .5rem;
-		box-sizing: border-box;
-	}
+		:global {
+			a, input, button, span {
+				display: block;
+				font-size: 28px;
+				text-align: center;
+				padding: .25rem .5rem;
+				box-sizing: border-box;
+			}
 
-	main :global(a), main :global(button) {
-		border-radius: 5px;
-		background: #a0bbbb;
-		border: none;
-		text-decoration: none;
-		cursor: pointer;
-		color: #333;
-	}
+			a, button {
+				border-radius: 5px;
+				background: #a0bbbb;
+				border: none;
+				text-decoration: none;
+				cursor: pointer;
+				color: #333;
+			}
 
-	main :global(p) {
-		color: #333;
+			p {
+				color: #333;
+			}
+		}
 	}
 </style>
