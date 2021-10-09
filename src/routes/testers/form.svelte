@@ -1,8 +1,3 @@
-<script context="module" lang="ts">
-  // TODO: Why does it give 500?
-	// export const prerender = true
-</script>
-
 <script lang="ts">
   let form = {
     id: null,
@@ -19,7 +14,7 @@
 
   const submitTest = async () => {
     form.dot = parseInt(form.dot)
-    
+
     const resp = await fetch('/api/v1/tests', {
       method: 'POST', body: JSON.stringify(form),
       headers: { 'Content-Type': 'application/json' }

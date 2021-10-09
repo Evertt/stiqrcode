@@ -33,7 +33,7 @@ export const post: RequestHandler<Locals> = async request => {
   const test = await testRef.get()
   const testData = test.data()
 
-  if (testData.tester !== request.locals.user?.id) {
+  if (testData.tester !== request.locals.user?.uid) {
     return { status: 401, error: "Unauthorized" }
   }
 

@@ -1,8 +1,3 @@
-<script context="module" lang="ts">
-  // TODO: Why does it give 500?
-	// export const prerender = true
-</script>
-
 <script lang="ts">
   import { db, user } from "$lib/firebase"
   import { onDestroy } from "svelte"

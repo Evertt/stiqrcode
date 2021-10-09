@@ -1,17 +1,23 @@
+<script context="module" lang="ts">
+  export const prerender = true
+</script>
+
 <script>
   import { goto } from "$app/navigation"
   import { db, auth, user } from "$lib/firebase"
 
   let name, email, password
+  let working = false
 
   const login = async () => {
+    working = true
     const { signInWithEmailAndPassword } = await import("firebase/auth")
-    const { user } = await signInWithEmailAndPassword($auth, email, password)
-
-    goto("./match")
+    await signInWithEmailAndPassword($auth, email, password)
+    goto("/testers/match")
   }
 
   const register = async () => {
+    working = true
     const { createUserWithEmailAndPassword, updateProfile } = await import("firebase/auth")
     const { user } = await createUserWithEmailAndPassword($auth, email, password)
 
@@ -22,16 +28,22 @@
       doc($db, "testers", user.uid),
       { displayName: name, email }
     )
-    goto("./match")
+    
+    goto("/testers/match")
   }
 
   const logout = async () => {
+    working = true
     const { signOut } = await import("firebase/auth")
     await signOut($auth)
+
+    goto("/")
   }
 </script>
 
-{#if $user}
+{#if working}
+  <img src="/tail-spin.svg" alt="Working..." />
+{:else if $user}
   Logged in!<br>
   <button on:click={logout}>Log out</button>
 {:else}

@@ -12,16 +12,16 @@ export const app: Readable<FirebaseApp> = service(() => readable(null, async set
   set(initializeApp(firebaseConfig))
 }))
 
-export const db: Readable<Firestore> = service(() => derived(app, async ($app, set) => {
-  if (!browser || !$app) return
-  const { getFirestore } = await import("firebase/firestore")
-  set(getFirestore())
-}))
-
 export const auth: Readable<Auth> = service(() => derived(app, async ($app, set) => {
   if (!browser || !$app) return
   const { initializeAuth, indexedDBLocalPersistence } = await import("firebase/auth")
   set(initializeAuth($app, {persistence: indexedDBLocalPersistence}))
+}))
+
+export const db: Readable<Firestore> = service(() => derived(auth, async ($auth, set) => {
+  if (!browser || !$auth) return
+  const { getFirestore } = await import("firebase/firestore")
+  set(getFirestore())
 }))
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
@@ -32,3 +32,17 @@ export const user: Readable<User> = derived(auth, async ($auth, set) => {
   innerUnsub()
   innerUnsub = onAuthStateChanged($auth, set)
 })
+
+export const getUser = async (session: Session): Promise<globalThis.User|null> => {
+  const user = session.user
+
+  if (!user && browser) try {
+    const { getAuth } = await import("firebase/auth")
+    const auth = getAuth()
+    return auth.currentUser
+  } catch (e) {
+    return null
+  }
+
+  return user
+}

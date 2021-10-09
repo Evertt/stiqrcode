@@ -13,11 +13,12 @@ function getIdToken(req: ServerRequest<Locals>) {
 
 const authenticateUser: Handle<Locals> = async ({ request, resolve }) => {
   const idToken = getIdToken(request)
+	if (!idToken) return resolve(request)
 	// Verify the ID token using the Firebase Admin SDK.
 	// User already logged in. Redirect to profile page.
 	try {
 		const { uid } = await admin.auth().verifyIdToken(idToken)
-		request.locals.user = { id: uid, ...users(uid) }
+		request.locals.user = users(uid)
 	} catch(_) {
 		// ignore error
 	}

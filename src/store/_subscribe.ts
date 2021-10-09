@@ -5,7 +5,7 @@ type Subscriber<T> = {
   (id: string): T
 }
 
-type HasId = { id: string }
+type HasId = { uid: string }
 
 export default function subscribe<T extends HasId>(collection: string): Subscriber<T> {
   let data: Record<string, T> = {}
@@ -14,7 +14,7 @@ export default function subscribe<T extends HasId>(collection: string): Subscrib
     const newData: typeof data = {}
 
     snapshot.forEach(doc => {
-      newData[doc.id] = { id: doc.id, ...doc.data() } as unknown as T
+      newData[doc.id] = { uid: doc.id, ...doc.data() } as unknown as T
     })
 
     data = newData

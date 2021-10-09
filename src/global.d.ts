@@ -1,7 +1,7 @@
 /// <reference types="@sveltejs/kit" />
 
 interface User {
-  id: string
+  uid: string
   email?: string
   displayName?: string
 }
@@ -11,7 +11,7 @@ interface Locals {
 }
 
 interface Code {
-  id: string
+  uid: string
   test: string
   tester_id?: string
   tester_name?: string
