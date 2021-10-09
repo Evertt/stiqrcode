@@ -35,27 +35,12 @@ self.addEventListener('install', event =>
  * @return {!Promise<?string>} The promise that resolves with an ID token if
  *     available. Otherwise, the promise resolves with null.
  */
-const getIdTokenPromise = (): Promise<string | null> => {
-	return new Promise(resolve => {
-		const unsubscribe = onAuthStateChanged(auth, user => {
-			// console.log({user})
-			unsubscribe()
-			if (user) {
-				getIdToken(user).then(
-					idToken => {
-						// console.log({ idToken })
-						resolve(idToken)
-					},
-					() => {
-						// console.log("Nothing...")
-						resolve(null)
-					} // Fail silently
-				)
-			} else {
-				resolve(null)
-			}
-		})
-	})
+const getIdTokenPromise = async (): Promise<string | null> => {
+	try {
+		return await auth.currentUser.getIdToken()
+	} catch (_) {
+		return null
+	}
 }
 
 const getOriginFromUrl = (url: string) => {
