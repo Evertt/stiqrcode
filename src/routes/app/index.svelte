@@ -47,20 +47,17 @@
 
 	const reset = async () => {
 		if (!confirm(
-			"Are you sure you want to delete all your data?\n" +
+			"Are you sure you want to delete all your data? " +
 			"That includes your history and any currently pending test."
 		)) return
 
 		resetting = true
-		if ($user) {
-			const { doc, deleteDoc } = await import("firebase/firestore")
+		if ($user) try {
 			const { deleteUser } = await import("firebase/auth")
-			await Promise.all([
-				$state.code ? deleteDoc(doc($db, "codes", $state.code)) : Promise.resolve(),
-				deleteDoc(doc($db, "tests", $user.uid)),
-				deleteUser($user),
-			])
-		}
+		
+			await deleteUser($user)
+		} catch (_) {}
+
 		$state = { tests: [] }
 		resetting = false
 	}
@@ -88,24 +85,24 @@
 	</a>
 {/if}
 
-{#if $state.tests.length}
-	<a sveltekit:prefetch href="/app/history">History</a>
-{:else}
-	<span>&nbsp;</span>
-{/if}
+<span>
+	{#if $state.tests.length}
+		<a sveltekit:prefetch href="/app/history">History</a>
+	{/if}
+</span>
 
 <a sveltekit:prefetch href="/app/scan">
 	Scan QR code
 </a>
 
-<span>&nbsp;</span>
-{#if $user || $state.tests.length}
-	<button class="reset" on:click={reset} disabled={resetting}>
-		{resetting ? "Deleting..." : "Delete all my data"}
-	</button>
-{:else}
-	<span>&nbsp;</span>
-{/if}
+<span></span>
+<span>
+	{#if $user || $state.tests.length}
+		<button class="reset" on:click={reset} disabled={resetting}>
+			{resetting ? "Deleting..." : "Delete all my data"}
+		</button>
+	{/if}
+</span>
 
 <style>
 	span {

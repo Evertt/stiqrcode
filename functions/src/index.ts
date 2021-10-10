@@ -18,6 +18,13 @@ export const docRelatedUser = functions.firestore
           if (!collection.startsWith("test")) return;
           const auth = functions.app.admin.auth();
           await auth.deleteUser(uid);
+
+          if (collection === "tests") {
+            const db = functions.app.admin.firestore();
+            const codes = await db.collection("codes")
+                .where("test", "==", uid).get();
+            codes.forEach((code) => code.ref.delete());
+          }
         }
     );
 
