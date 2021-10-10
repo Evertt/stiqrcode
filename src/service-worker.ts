@@ -56,6 +56,9 @@ const getBodyContent = async (req: Request): Promise<string|undefined> => {
 }
 
 self.addEventListener('fetch', (event: FetchEvent) => {
+	// Don't handle google apis through this service worker
+	if (event.request.url.match(/googleapis.com/)) return
+
 	const evt = event
 	// console.log({ url: event.request.url})
 

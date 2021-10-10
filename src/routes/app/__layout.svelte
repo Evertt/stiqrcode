@@ -1,3 +1,7 @@
+<svelte:head>
+	<meta name="theme-color" content="#e0ffff">
+</svelte:head>
+
 <main>
 	<slot />
 </main>
