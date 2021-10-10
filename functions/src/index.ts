@@ -3,6 +3,24 @@ import * as functions from "firebase-functions";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
+export const deleteUserRelatedDoc = functions.auth.user().onDelete(
+    async (user) => {
+      const collection = user.email ? "testers" : "tests";
+      const db = functions.app.admin.firestore();
+      await db.collection(collection).doc(user.uid).delete();
+    }
+);
+
+export const docRelatedUser = functions.firestore
+    .document("{collection}/{uid}").onDelete(
+        async (_, context) => {
+          const {collection, uid} = context.params as { [key: string]: string };
+          if (!collection.startsWith("test")) return;
+          const auth = functions.app.admin.auth();
+          await auth.deleteUser(uid);
+        }
+    );
+
 let ssrServerServer: any;
 export const ssrServer = functions.region("us-central1")
     .https.onRequest(async (request, response) => {
