@@ -1,12 +1,7 @@
-import { build, files, timestamp } from '$service-worker'
-import firebaseConfig from "$lib/firebase-config"
 import { initializeApp } from "firebase/app"
-import {
-	initializeAuth,
-	indexedDBLocalPersistence,
-	onAuthStateChanged,
-	getIdToken
-} from "firebase/auth"
+import firebaseConfig from "$lib/firebase-config"
+import { build, files, timestamp } from '$service-worker'
+import { initializeAuth, indexedDBLocalPersistence } from "firebase/auth"
 
 const FILES = `cache${timestamp}`
 
@@ -37,7 +32,7 @@ self.addEventListener('install', event =>
  */
 const getIdTokenPromise = async (): Promise<string | null> => {
 	try {
-		return await auth.currentUser.getIdToken()
+		return await auth.currentUser?.getIdToken()
 	} catch (_) {
 		return null
 	}
@@ -72,6 +67,9 @@ self.addEventListener('fetch', (event: FetchEvent) => {
 		const isStaticAsset = url.host === self.location.host && staticAssets.has(url.pathname)
 		const validHostAndProtocol = self.location.origin == getOriginFromUrl(evt.request.url) &&
 			(self.location.protocol == 'https:' || self.location.hostname == 'localhost')
+		
+		// We want to skip caching requests with an idToken, because the cached response that we may have,
+		// was probably a response that the server gave us when we were NOT authenticated yet.
 		const skipBecauseUncached = (event.request.cache === 'only-if-cached' || idToken) && !isStaticAsset
 
 		// For same origin https requests, append idToken to header.

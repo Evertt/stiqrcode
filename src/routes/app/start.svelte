@@ -84,9 +84,9 @@
 	{#if !code}
 		<img src="/tail-spin.svg" alt="Loading..." />
 	{:else}
-		<p class="huge">{$state.code}</p>
-
 		{#if !code.status}
+			<p class="huge">{$state.code}</p>
+
 			<p>
 				Show code,<br>
 				and wait to confirm.

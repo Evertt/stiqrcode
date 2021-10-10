@@ -16,6 +16,7 @@
 	fetching.set = throttle(fetching.set.bind(fetching), 500)
 
 	let resetting = false
+	let message: string
 
 	const fetchResults = async () => {
 		if (!$user) return
@@ -24,22 +25,31 @@
 		const { getDoc, doc, deleteDoc } = await import("firebase/firestore")
 
 		const test = await getDoc(doc($db, "tests", $user.uid))
+		const data = test.data()
 		const jwe = test.get('results')
 
 		if (jwe) {
 			deleteDoc(test.ref)
-			await deleteUser($user)
 			const privateKey = await importPKCS8($state.private_key, "RSA-OAEP-256")
 			const decryptedJws = await compactDecrypt(jwe, privateKey)
 			$state = { tests: [ ...$state.tests, decode(decryptedJws.plaintext) ] }
+		}
+
+		if (!data || jwe) {
+			await deleteUser($user)
+			message = jwe
+				? "Yes! Check history 👇"
+				: "It got deleted 😕"
 		}
 
 		$fetching = false
 	}
 
 	const reset = async () => {
-		if (!confirm("Are you sure you want to delete all your data?"))
-			return
+		if (!confirm(
+			"Are you sure you want to delete all your data?\n" +
+			"That includes your history and any currently pending test."
+		)) return
 
 		resetting = true
 		if ($user) {
@@ -70,8 +80,8 @@
 			No results yet
 		{/if}
 	</button>
-{:else if $state.tests.length && $fetching === false}
-	<span>Yes! Check history 👇</span>
+{:else if message}
+	<span>{message}</span>
 {:else}
 	<a sveltekit:prefetch href="/app/start">
 		{$state.code ? "Show code" : "Start new test"}

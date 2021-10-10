@@ -21,8 +21,10 @@ interface Code {
 interface Result {
   date: Date
   name: string
-  result: boolean
   tested_around: string
+  stis: {
+    [key: string]: boolean
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
