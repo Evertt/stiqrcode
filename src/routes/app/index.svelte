@@ -97,13 +97,11 @@
 </a>
 
 <span></span>
-<span>
-	{#if $user || $state.tests.length}
-		<button class="reset" on:click={reset} disabled={resetting}>
-			{resetting ? "Deleting..." : "Delete all my data"}
-		</button>
-	{/if}
-</span>
+{#if $user || $state.tests.length}
+	<button class="reset" on:click={reset} disabled={resetting}>
+		{resetting ? "Deleting..." : "Delete all my data"}
+	</button>
+{/if}
 
 <style>
 	span {
