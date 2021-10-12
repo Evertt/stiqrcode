@@ -1,12 +1,22 @@
+<script lang="ts">
+  import PageTransition from "$lib/PageTransition.svelte"
+</script>
+
 <svelte:head>
 	<meta name="theme-color" content="#e0ffff">
 </svelte:head>
 
-<main>
-	<slot />
-</main>
+<PageTransition>
+	<main>
+		<slot />
+	</main>
+</PageTransition>
 
 <style lang="postcss">
+	:global(body) {
+		background: #e0ffff;
+	}
+
 	main {
 		flex: 1;
 		gap: 20px;
@@ -19,7 +29,6 @@
 		flex-direction: column;
 		justify-content: center;
 		font-size: 28px;
-		background: #e0ffff;
 		font-family: sans-serif;
 
 		:global {

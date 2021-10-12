@@ -52,7 +52,7 @@
 		"play around with the distance",
 		"closer is not always better",
 		"a brighter screen might help",
-		"do they have flux? make them turn it off"
+		"make sure their screen isn't tinted red"
 	]
 	let tipIndex = -1
 	const fadeDuration = 700
@@ -153,7 +153,7 @@
 				{#if tips[tipIndex]}
 					<span
 						out:fade={{ duration: fadeDuration }}
-						in:fade={{ duration: fadeDuration, delay: fadeDuration + 50 }}
+						in:fade={{ duration: fadeDuration, delay: fadeDuration }}
 					>Tip: {tips[tipIndex]}</span>
 				{/if}
 			{/key}
@@ -228,6 +228,13 @@
 	.tips, .new-scan {
 		height: 72px;
 		display: flex;
+		position: relative;
+	}
+
+	.tips > * {
+		position: absolute;
+		width: 100%;
+		height: 100%;
 	}
 
 	.new-scan button {
