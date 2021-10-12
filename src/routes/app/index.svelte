@@ -85,12 +85,11 @@
 	</a>
 {/if}
 
-
-{#if $state.tests.length}
-	<a sveltekit:prefetch href="/app/history">History</a>
-{:else}
-	<span>&nbsp;</span>
-{/if}
+<span>
+	{#if $state.tests.length}
+		<a sveltekit:prefetch href="/app/history">History</a>
+	{/if}
+</span>
 
 <a sveltekit:prefetch href="/app/scan">
 	Scan QR code
@@ -111,6 +110,8 @@
 	a, button, span {
 		width: 285px;
 		height: 45px;
+		line-height: 45px;
+		padding: 0 !important;
 	}
 
 	.reset {
