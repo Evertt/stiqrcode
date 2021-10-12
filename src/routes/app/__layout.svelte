@@ -1,16 +1,8 @@
-<script lang="ts">
-  import PageTransition from "$lib/PageTransition.svelte"
-</script>
-
 <svelte:head>
 	<meta name="theme-color" content="#e0ffff">
 </svelte:head>
 
-<PageTransition>
-	<main>
-		<slot />
-	</main>
-</PageTransition>
+<main><slot /></main>
 
 <style lang="postcss">
 	:global(body) {
