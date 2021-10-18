@@ -7,6 +7,7 @@
 	import { throttle } from "underscore"
 	import { writable } from "svelte/store"
 	import { db, user } from "$lib/firebase"
+	import { fade } from "svelte/transition"
 	import { importPKCS8 } from 'jose/key/import'
 	import compactDecrypt from 'jose/jwe/compact/decrypt'
 
@@ -67,40 +68,42 @@
 	<title>Home</title>
 </svelte:head>
 
-{#if $user && !$state.code}
-	<button on:click={fetchResults} disabled={$fetching}>
-		{#if $fetching}
-			Checking...
-		{:else if $fetching == null}
-			Check latest test
-		{:else}
-			No results yet
-		{/if}
-	</button>
-{:else if message}
-	<span>{message}</span>
-{:else}
-	<a sveltekit:prefetch href="/app/start">
-		{$state.code ? "Show code" : "Start new test"}
-	</a>
-{/if}
-
-<span>
-	{#if $state.tests.length}
-		<a sveltekit:prefetch href="/app/history">History</a>
+<div id="wrap" in:fade={{ duration: 400, delay: 200 }} out:fade={{ duration: 400 }}>
+	{#if $user && !$state.code}
+		<button on:click={fetchResults} disabled={$fetching}>
+			{#if $fetching}
+				Checking...
+			{:else if $fetching == null}
+				Check latest test
+			{:else}
+				No results yet
+			{/if}
+		</button>
+	{:else if message}
+		<span>{message}</span>
+	{:else}
+		<a sveltekit:prefetch href="/app/start">
+			{$state.code ? "Show code" : "Start new test"}
+		</a>
 	{/if}
-</span>
 
-<a sveltekit:prefetch href="/app/scan">
-	Scan QR code
-</a>
+	<span>
+		{#if $state.tests.length}
+			<a sveltekit:prefetch href="/app/history">History</a>
+		{/if}
+	</span>
 
-<span></span>
-{#if $user || $state.tests.length}
-	<button class="reset" on:click={reset} disabled={resetting}>
-		{resetting ? "Deleting..." : "Delete all my data"}
-	</button>
-{/if}
+	<a sveltekit:prefetch href="/app/scan">
+		Scan QR code
+	</a>
+
+	<span></span>
+	{#if $user || $state.tests.length}
+		<button class="reset" on:click={reset} disabled={resetting}>
+			{resetting ? "Deleting..." : "Delete all my data"}
+		</button>
+	{/if}
+</div>
 
 <style>
 	span {
@@ -115,11 +118,6 @@
 	}
 
 	.reset {
-		/* position: fixed; */
-		/* top: .25rem;
-		right: .25rem;
-		width: 100px; */
-		/* bottom: 20px; */
 		color: #eee;
 		background: #cd1515;
 	}

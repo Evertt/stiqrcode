@@ -6,6 +6,7 @@
 	import "../../check.css"
 	import state from '$lib/state'
 	import { goto } from '$app/navigation'
+	import { fly } from "svelte/transition"
 	import { db, user } from "$lib/firebase"
 	import { onMount, onDestroy } from "svelte"
 	import BackButton from "$lib/BackButton.svelte"
@@ -78,9 +79,12 @@
 	</title>
 </svelte:head>
 
-<BackButton />
 
-<section>
+<section id="wrap"
+	in:fly={{ duration: 400, delay: 200, x: window.innerWidth }}
+	out:fly={{ duration: 200, x: window.innerWidth }}
+>
+	<BackButton />
 	{#if !code}
 		<img src="/tail-spin.svg" alt="Loading..." />
 	{:else}

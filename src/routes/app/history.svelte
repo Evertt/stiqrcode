@@ -6,6 +6,7 @@
 	import pako from "pako"
 	import QRCode from 'qrcode'
 	import state from '$lib/state'
+	import { fly } from "svelte/transition"
 	import transform from "$lib/jwt-transform"
 	import { encode } from 'base45-ts/src/base45'
 	import BackButton from "$lib/BackButton.svelte"
@@ -35,17 +36,22 @@
 	}
 </script>
 
-<BackButton />
+<div id="wrap"
+	in:fly={{ duration: 400, delay: 200, x: window.innerWidth }}
+	out:fly={{ duration: 200, x: window.innerWidth }}
+>
+	<BackButton />
 
-{#each tests as { jws, date }}
-	<button on:click={_ => makeQRCode(jws)}>{date}</button>
-{/each}
-
-{#if dataURL}
-	<div class="qr-code" on:click={_ => dataURL = null}>
-		<img src={dataURL} alt="QR Code" />
-	</div>
-{/if}
+	{#each tests as { jws, date }}
+		<button on:click={_ => makeQRCode(jws)}>{date}</button>
+	{/each}
+	
+	{#if dataURL}
+		<div class="qr-code" on:click={_ => dataURL = null}>
+			<img src={dataURL} alt="QR Code" />
+		</div>
+	{/if}
+</div>
 
 <style>
 	button {

@@ -13,10 +13,10 @@
 	import QrScanner from 'qr-scanner'
 	import { onDestroy } from 'svelte'
 	import jwtVerify from 'jose/jwt/verify'
-	import { fade } from "svelte/transition"
 	import transform from "$lib/jwt-transform"
 	import * as b45 from 'base45-ts/src/base45'
 	import { importSPKI } from 'jose/key/import'
+	import { fade, fly } from "svelte/transition"
 	import type { KeyLike } from 'jose/key/import'
 	import BackButton from "$lib/BackButton.svelte"
 
@@ -107,10 +107,12 @@
 	<title>Scanner</title>
 </svelte:head>
 
-<BackButton />
 
-<div class="content">
-
+<div id="wrap" class="content"
+	in:fly={{ duration: 400, delay: 200, x: window.innerWidth }}
+	out:fly={{ duration: 200, x: window.innerWidth }}>
+	<BackButton />
+	
 	{#if result}
 		<div class="square">
 			{#if result instanceof Error}
@@ -162,12 +164,11 @@
 </div>
 
 <style>
-	.content {
-		width: 100%;
-		display: flex;
+	#wrap.content {
 		flex-direction: column;
 		justify-content: center;
-		font-size: 22px !important;
+		font-size: 22px;
+		align-items: stretch;
 	}
 
 	.error {

@@ -10,18 +10,24 @@
 	}
 
 	main {
-		flex: 1;
-		gap: 20px;
 		width: 100vw;
-		padding: 1rem;
 		height: 100vh;
-		display: flex;
 		margin: 0 auto;
-		align-items: center;
-		flex-direction: column;
-		justify-content: center;
 		font-size: 28px;
 		font-family: sans-serif;
+
+		:global(#wrap) {
+			position: fixed;
+			width: 100vw;
+			height: 100vh;
+			flex: 1;
+			gap: 20px;
+			padding: 1rem;
+			display: flex;
+			align-items: center;
+			flex-direction: column;
+			justify-content: center;
+		}
 
 		:global {
 			a, input, button, span {
