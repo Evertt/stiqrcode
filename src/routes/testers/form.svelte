@@ -24,19 +24,9 @@
 	}
 </script>
 
-<form on:submit|preventDefault={submitTest}>
+<form sm="vstack" on:submit|preventDefault={submitTest}>
   <input bind:value={form.id} placeholder="ID" required />
   <input bind:value={form.sub} placeholder="Name" required />
   <input bind:value={form.dot} placeholder="Date" required />
   <button type="submit">Submit form</button>
 </form>
-
-<style>
-	form {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 20px;
-	}
-</style>

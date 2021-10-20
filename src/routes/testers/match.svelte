@@ -35,17 +35,15 @@
 </script>
 
 {#if confirming}
-  <img class="spinner" src="/tail-spin.svg" alt="Confirming..." />
+  <p class="m-2 text-center">
+    Confirming
+    <img class="h-[26px] m-2 inline" src="/tail-spin.svg" alt="Confirming..." />
+  </p>
   <button on:click={_ => confirmCode(false)}>Cancel</button>
 {:else if !id}
   <input bind:value={code} placeholder="Code" pattern="[A-Z]{4}" />
   <button on:click={_ => confirmCode(true)}>Confirm code</button>
 {:else}
-  {id}
+  <p class="h-[42px] m-2 text-center p-2">{id}</p>
+  <button on:click={_ => id = null}>New code</button>
 {/if}
-
-<style>
-	.spinner {
-    height: 50px;
-  }
-</style>

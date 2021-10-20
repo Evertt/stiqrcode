@@ -11,10 +11,11 @@
 </script>
 
 <script lang="ts">
-	import '../app.css'
-	import { browser } from "$app/env"
+	import "virtual:windi.css"
 	import { sveltex } from 'sveltex'
+	import { browser } from "$app/env"
 	sveltex()
+	if (browser) import("virtual:windi-devtools")
 </script>
 
 <slot />

@@ -2,6 +2,7 @@ import { resolve } from 'path'
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import preprocess from 'svelte-preprocess'
+import WindiCSS from 'vite-plugin-windicss'
 import firebase from 'svelte-adapter-firebase'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -11,8 +12,8 @@ const config = {
 	// Consult https://github.com/sveltejs/svelte-preprocess
 	// for more information about preprocessors
 	preprocess: [preprocess({
-        postcss: true
-    })],
+		postcss: true
+	})],
 
 	kit: {
 		adapter: firebase(),
@@ -23,6 +24,9 @@ const config = {
 					$store: resolve(__dirname, './src/store'),
 				},
 			},
+			plugins: [
+				WindiCSS(),
+			],
 		}
 	}
 }
