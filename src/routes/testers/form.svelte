@@ -24,7 +24,7 @@
 	}
 </script>
 
-<form sm="vstack" on:submit|preventDefault={submitTest}>
+<form class="vstack" on:submit|preventDefault={submitTest}>
   <input bind:value={form.id} placeholder="ID" required />
   <input bind:value={form.sub} placeholder="Name" required />
   <input bind:value={form.dot} placeholder="Date" required />

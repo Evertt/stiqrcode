@@ -39,10 +39,13 @@
 
 <style>
   a {
-    @apply border-b-3 pb-1 w-24;
+    border-bottom-width: 3px;
+    padding-bottom: 0.25rem;
+    width: 6rem;
 
     &.active {
-      @apply border-blue-800;
+      --tw-border-opacity: 1;
+      border-color: rgba(30, 64, 175, var(--tw-border-opacity));
     }
   }
 
