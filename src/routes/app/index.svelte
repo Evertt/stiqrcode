@@ -22,7 +22,6 @@
 	const fetchResults = async () => {
 		if (!$user) return
 		$fetching = true
-		const { deleteUser } = await import("firebase/auth")
 		const { getDoc, doc, deleteDoc } = await import("firebase/firestore")
 
 		const test = await getDoc(doc($db, "tests", $user.uid))
@@ -37,7 +36,9 @@
 		}
 
 		if (!data || jwe) {
-			await deleteUser($user)
+			try { $user.delete() }
+			catch (_) {}
+			
 			message = jwe
 				? "Yes! Check history 👇"
 				: "It got deleted 😕"
@@ -54,9 +55,7 @@
 
 		resetting = true
 		if ($user) try {
-			const { deleteUser } = await import("firebase/auth")
-		
-			await deleteUser($user)
+			await $user.delete()
 		} catch (_) {}
 
 		$state = { tests: [] }
@@ -69,7 +68,9 @@
 </svelte:head>
 
 <div id="wrap" in:fade={{ duration: 400, delay: 200 }} out:fade={{ duration: 400 }}>
-	{#if $user && !$state.code}
+	{#if message}
+		<span>{message}</span>
+	{:else if $user && !$state.code}
 		<button on:click={fetchResults} disabled={$fetching}>
 			{#if $fetching}
 				Checking...
@@ -79,8 +80,6 @@
 				No results yet
 			{/if}
 		</button>
-	{:else if message}
-		<span>{message}</span>
 	{:else}
 		<a sveltekit:prefetch href="/app/start">
 			{$state.code ? "Show code" : "Start new test"}
