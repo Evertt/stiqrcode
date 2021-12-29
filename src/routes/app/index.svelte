@@ -102,6 +102,8 @@
 		<button class="reset" on:click={reset} disabled={resetting}>
 			{resetting ? "Deleting..." : "Delete all my data"}
 		</button>
+	{:else}
+		<span></span>
 	{/if}
 </div>
 

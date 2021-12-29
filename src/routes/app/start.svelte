@@ -7,10 +7,11 @@
 	import fsm from "svelte-fsm"
 	import state from "$lib/state"
 	import { browser } from "$app/env"
+	import { onDestroy } from "svelte"
 	import { goto } from "$app/navigation"
 	import { fly } from "svelte/transition"
 	import { db, user } from "$lib/firebase"
-	import { onDestroy } from "svelte"
+	import Progress from "$lib/Progress.svelte"
 	import BackButton from "$lib/BackButton.svelte"
 	import { exportPKCS8, exportSPKI } from "jose/key/export"
 	import generateKeyPair from "jose/util/generate_key_pair"
@@ -18,6 +19,7 @@
 	let code: Code
 	let unsubscribe: () => void | undefined
 	onDestroy(() => unsubscribe && unsubscribe())
+	let progress = 0
 
 	const codeState = fsm("initializing", {
 		initializing: {
@@ -25,28 +27,25 @@
 				if (!browser) return
 				if ($state.code) return this.waitToConfirm()
 
-				console.log("Importing firestore...")
+				progress = 0
 				const { setDoc, doc } = await import("firebase/firestore")
-				console.log("Importing auth...")
 				const { getAuth, signInAnonymously } = await import("firebase/auth")
 
-				console.log("Signing user in...")
 				const { user } = await signInAnonymously(getAuth())
-
-				console.log("Generating keys...")
+				progress++
+				
 				const keys = await generateKeyPair("RSA-OAEP-256", { extractable: true })
 				const pkcs8Pem = await exportPKCS8(keys.privateKey)
 				const spkiPem = await exportSPKI(keys.publicKey)
 
-				console.log("Fetching code from api...")
 				const resp = await fetch('/api/v1/code')
 				const code = await resp.text()
+				progress++
 
-				console.log("Fetching test from firestore...")
 				const testRef = doc($db, "tests", user.uid)
 				await setDoc(testRef, { public_key: spkiPem })
-
-				console.log("Fetching code from firestore...")
+				
+				progress++
 				const codeRef = doc($db, "codes", code)
 				await setDoc(codeRef, { test: testRef.id } as Code)
 
@@ -112,14 +111,13 @@
 	</title>
 </svelte:head>
 
-
 <section id="wrap"
 	in:fly={{ duration: 400, delay: 200, x: window.innerWidth }}
 	out:fly={{ duration: 200, x: window.innerWidth }}
 >
 	<BackButton />
 	{#if $codeState === "initializing"}
-		<img src="/tail-spin.svg" alt="Loading..." />
+		<Progress value={progress} max={3} />
 	{:else if $codeState === "waitingToConfirm"}
 		<p class="huge">{$state.code}</p>
 
