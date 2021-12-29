@@ -4,11 +4,11 @@
 
 <script lang="ts">
 	import pako from "pako"
-	import QRCode from 'qrcode'
-	import state from '$lib/state'
+	import QRCode from "qrcode"
+	import state from "$lib/state"
+	import { encode } from "base45-ts"
 	import { fly } from "svelte/transition"
 	import transform from "$lib/jwt-transform"
-	import { encode } from 'base45-ts/src/base45'
 	import BackButton from "$lib/BackButton.svelte"
 
 	let dataURL: string

@@ -29,9 +29,12 @@ const encrypt = (payload: string, publicKey: KeyLike) =>
 export const post: RequestHandler<Locals> = async request => {
 	const { id, ...form } = request.body as any
 
+  // const tests = (await db.collection('tests').get()).docs.map(d => d.data())
   const testRef = db.collection('tests').doc(id)
   const test = await testRef.get()
   const testData = test.data()
+
+  // console.log({ tests, id, testData, uid: request.locals.user?.uid })
 
   if (testData.tester !== request.locals.user?.uid) {
     return { status: 401, error: "Unauthorized" }

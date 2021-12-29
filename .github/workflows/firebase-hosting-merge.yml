@@ -14,9 +14,10 @@ jobs:
       - name: Install and build
         run: |
           npm ci
-          cd functions
-          npm ci
+          cd node_modules/base45-ts
           npm run build
+          cd ../../functions
+          npm ci
           cd ..
           npm run build
       - name: Deploy to firebase

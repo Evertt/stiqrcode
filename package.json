@@ -38,6 +38,7 @@
 		"svelte": "^3.43.0",
 		"svelte-adapter-firebase": "^0.13.0",
 		"svelte-check": "^2.2.6",
+		"svelte-fsm": "^1.1.2",
 		"svelte-preprocess": "^4.9.5",
 		"sveltex": "^0.1.0-3",
 		"tslib": "^2.3.1",

@@ -10,22 +10,22 @@
 
 <script lang="ts">
 	import pako from "pako"
-	import QrScanner from 'qr-scanner'
-	import { onDestroy } from 'svelte'
-	import jwtVerify from 'jose/jwt/verify'
+	import QrScanner from "qr-scanner"
+	import { onDestroy } from "svelte"
+	import jwtVerify from "jose/jwt/verify"
 	import transform from "$lib/jwt-transform"
-	import * as b45 from 'base45-ts/src/base45'
-	import { importSPKI } from 'jose/key/import'
+	import { importSPKI } from "jose/key/import"
 	import { fade, fly } from "svelte/transition"
-	import type { KeyLike } from 'jose/key/import'
+	import type { KeyLike } from "jose/key/import"
+	import { decode as b45Decode } from "base45-ts"
 	import BackButton from "$lib/BackButton.svelte"
 
-	QrScanner.WORKER_PATH = '/qr-scanner-worker.min.js'
+	QrScanner.WORKER_PATH = "/qr-scanner-worker.min.js"
 
 	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
 
 	const decompress = (compressed: string) =>
-		decode(pako.inflateRaw(b45.decode(compressed)))
+		decode(pako.inflateRaw(b45Decode(compressed)))
 
 	export let spkiPem: string
 	let publicKey: KeyLike

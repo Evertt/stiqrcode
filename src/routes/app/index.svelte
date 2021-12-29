@@ -3,13 +3,13 @@
 </script>
 
 <script lang="ts">
-	import state from '$lib/state'
+	import state from "$lib/state"
 	import { throttle } from "underscore"
 	import { writable } from "svelte/store"
 	import { db, user } from "$lib/firebase"
 	import { fade } from "svelte/transition"
-	import { importPKCS8 } from 'jose/key/import'
-	import compactDecrypt from 'jose/jwe/compact/decrypt'
+	import { importPKCS8 } from "jose/key/import"
+	import compactDecrypt from "jose/jwe/compact/decrypt"
 
 	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
 
