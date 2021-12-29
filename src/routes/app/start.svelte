@@ -25,20 +25,28 @@
 				if (!browser) return
 				if ($state.code) return this.waitToConfirm()
 
+				console.log("Importing firestore...")
 				const { setDoc, doc } = await import("firebase/firestore")
+				console.log("Importing auth...")
 				const { getAuth, signInAnonymously } = await import("firebase/auth")
 
+				console.log("Signing user in...")
 				const { user } = await signInAnonymously(getAuth())
 
+				console.log("Generating keys...")
 				const keys = await generateKeyPair("RSA-OAEP-256", { extractable: true })
 				const pkcs8Pem = await exportPKCS8(keys.privateKey)
 				const spkiPem = await exportSPKI(keys.publicKey)
+
+				console.log("Fetching code from api...")
 				const resp = await fetch('/api/v1/code')
 				const code = await resp.text()
 
+				console.log("Fetching test from firestore...")
 				const testRef = doc($db, "tests", user.uid)
 				await setDoc(testRef, { public_key: spkiPem })
 
+				console.log("Fetching code from firestore...")
 				const codeRef = doc($db, "codes", code)
 				await setDoc(codeRef, { test: testRef.id } as Code)
 
