@@ -65,7 +65,7 @@
 		await updateDoc(testRef, { tester: confirmed ? code.tester_id : null })
 	}
 
-	$: if (code && code.status === "confirmed") {
+	$: if (code?.status === "confirmed") {
 		setTimeout(() => {
 			$state.code = null
 			goto('./')
