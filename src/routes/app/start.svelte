@@ -10,7 +10,7 @@
 	import { goto } from "$app/navigation"
 	import { fly } from "svelte/transition"
 	import { db, user } from "$lib/firebase"
-	import { onMount, onDestroy } from "svelte"
+	import { onDestroy } from "svelte"
 	import BackButton from "$lib/BackButton.svelte"
 	import { exportPKCS8, exportSPKI } from "jose/key/export"
 	import generateKeyPair from "jose/util/generate_key_pair"
@@ -19,7 +19,7 @@
 	let unsubscribe: () => void | undefined
 	onDestroy(() => unsubscribe && unsubscribe())
 
-	const myFsm = fsm("initializing", {
+	const codeState = fsm("initializing", {
 		initializing: {
 			async _enter() {
 				if (!browser) return
@@ -110,22 +110,22 @@
 	out:fly={{ duration: 200, x: window.innerWidth }}
 >
 	<BackButton />
-	{#if $myFsm === "initializing"}
+	{#if $codeState === "initializing"}
 		<img src="/tail-spin.svg" alt="Loading..." />
-	{:else if $myFsm === "waitingToConfirm"}
+	{:else if $codeState === "waitingToConfirm"}
 		<p class="huge">{$state.code}</p>
 
 		<p>
 			Show code,<br>
 			and wait to confirm.
 		</p>
-	{:else if $myFsm === "confirming"}
+	{:else if $codeState === "confirming"}
 		<p>Are you at {code.tester_name}?</p>
 		<div class="buttons">
-			<button on:click={_ => myFsm.respond(false)}>No</button>
-			<button on:click={_ => myFsm.respond(true)}>Yes</button>
+			<button on:click={_ => codeState.respond(false)}>No</button>
+			<button on:click={_ => codeState.respond(true)}>Yes</button>
 		</div>
-	{:else if $myFsm === "confirmed"}
+	{:else if $codeState === "confirmed"}
 		<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
 			<circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
 			<path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>

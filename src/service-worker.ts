@@ -141,7 +141,8 @@ self.addEventListener('activate', event =>
 
 	try {
 		const response = await fetch(request)
-		cache.put(request, response.clone())
+		if (request.method === "GET")
+			cache.put(request, response.clone())
 		return response
 	} catch (err) {
 		const response = await cache.match(request)
