@@ -12,6 +12,7 @@
 	import BackButton from "$lib/BackButton.svelte"
 
 	let dataURL: string
+	let interval: number | NodeJS.Timer
 
 	const compress = (jwt: string) => encode(pako.deflateRaw(jwt))
 
@@ -23,7 +24,7 @@
 	})
 
 	const makeQRCode = async (test: string) => {
-		dataURL = "/tail-spin.svg"
+		if (!dataURL) dataURL = "/tail-spin.svg"
 
 		const resp = await fetch('/api/v1/sign', {
 			headers: { 'Content-Type': 'text/plain' },
@@ -32,7 +33,23 @@
 
 		const jws = await resp.text()
 		const compressed = compress(jws)
+
+		if (!dataURL) return // request was canceled
 		dataURL = await QRCode.toDataURL(compressed)
+	}
+
+	const displayQRCode = (test: string) => {
+		clearInterval(interval as number)
+		makeQRCode(test)
+		interval = setInterval(
+			() => makeQRCode(test),
+			1000 * 60 * 3 // 3 minutes
+		)
+	}
+
+	const stopDisplayingQRCode = () => {
+		clearInterval(interval as number)
+		dataURL = null // this also cancels any running requests
 	}
 </script>
 
@@ -43,11 +60,11 @@
 	<BackButton />
 
 	{#each tests as { jws, date }}
-		<button on:click={_ => makeQRCode(jws)}>{date}</button>
+		<button on:click={_ => displayQRCode(jws)}>{date}</button>
 	{/each}
 	
 	{#if dataURL}
-		<div class="qr-code" on:click={_ => dataURL = null}>
+		<div class="qr-code" on:click={stopDisplayingQRCode}>
 			<img src={dataURL} alt="QR Code" />
 		</div>
 	{/if}
