@@ -13,7 +13,7 @@ jobs:
           node-version: '14'
       - name: Install and build
         run: |
-          npm install
+          npm ci
           cd node_modules/base45-ts
           npm run build
           cd ../../functions
