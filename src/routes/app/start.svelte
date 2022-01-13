@@ -10,16 +10,17 @@
 	import { onDestroy } from "svelte"
 	import { goto } from "$app/navigation"
 	import { fly } from "svelte/transition"
-	import { db, user } from "$lib/firebase"
 	import Progress from "$lib/Progress.svelte"
+	import { auth, db, user } from "$lib/firebase"
 	import BackButton from "$lib/BackButton.svelte"
 	import { exportPKCS8, exportSPKI } from "jose/key/export"
 	import generateKeyPair from "jose/util/generate_key_pair"
 
 	let code: Code
+	let progress = 0
 	let unsubscribe: () => void | undefined
 	onDestroy(() => unsubscribe && unsubscribe())
-	let progress = 0
+	const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 
 	const codeState = fsm("initializing", {
 		initializing: {
@@ -29,9 +30,9 @@
 
 				progress = 0
 				const { setDoc, doc } = await import("firebase/firestore")
-				const { getAuth, signInAnonymously } = await import("firebase/auth")
+				const { signInAnonymously } = await import("firebase/auth")
 
-				const { user } = await signInAnonymously(getAuth())
+				const { user } = await signInAnonymously($auth)
 				progress++
 				
 				const keys = await generateKeyPair("RSA-OAEP-256", { extractable: true })
@@ -95,11 +96,10 @@
 			deny: "waitingToConfirm"
 		},
 		confirmed: {
-			_enter() {
-				setTimeout(() => {
-					$state.code = null
-					goto('./')
-				}, 2000)
+			async _enter() {
+				await sleep(2000)
+				$state.code = null
+				goto('./')
 			}
 		}
 	})

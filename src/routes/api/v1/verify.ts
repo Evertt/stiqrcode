@@ -1,12 +1,13 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { publicKey } from "$lib/signing-keys"
+import { getPublicKey } from "$lib/signing-keys"
 import jwtVerify from 'jose/jwt/verify'
 
 export const post: RequestHandler<Locals, string> = async request => {
   const jws = request.body
+  const publicKey = await getPublicKey()
 
   try {
-    const verified = await jwtVerify(jws, await publicKey(), {
+    const verified = await jwtVerify(jws, publicKey, {
       issuer: "stiqrcode.com",
       audience: "stiqrcode.app"
     })

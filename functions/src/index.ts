@@ -17,13 +17,13 @@ export const docRelatedUser = functions.firestore
           const {collection, uid} = context.params as { [key: string]: string };
           if (!collection.startsWith("test")) return;
           const auth = functions.app.admin.auth();
-          await auth.deleteUser(uid);
+          auth.deleteUser(uid);
 
           if (collection === "tests") {
             const db = functions.app.admin.firestore();
             const codes = await db.collection("codes")
                 .where("test", "==", uid).get();
-            codes.forEach((code) => code.ref.delete());
+            codes.forEach(code => code.ref.delete());
           }
         }
     );

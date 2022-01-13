@@ -4,6 +4,9 @@ import { importPKCS8, importSPKI, importJWK } from 'jose/key/import'
 
 export const signingKeys = config().signing
 
-export const privateKey = () => importPKCS8(signingKeys.private_key, 'ES256')
-export const publicKey = () => importSPKI(signingKeys.public_key, 'ES256')
-export const secret = () => importJWK(signingKeys.secret, 'HS256')
+// EcDSA was chosen instead of EdDSA,
+// because an exported EdDSA public key
+// can't be imported on the browser side.
+export const getPrivateKey = () => importPKCS8(signingKeys.private_key, 'ES256')
+export const getPublicKey = () => importSPKI(signingKeys.public_key, 'ES256')
+export const getSecret = () => importJWK(signingKeys.secret, 'HS256')

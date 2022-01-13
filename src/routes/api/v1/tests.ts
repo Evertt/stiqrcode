@@ -1,5 +1,5 @@
 import type { RequestHandler } from '@sveltejs/kit'
-import { secret } from '$lib/signing-keys'
+import { getSecret } from '$lib/signing-keys'
 import { importSPKI } from 'jose/key/import'
 import { db } from '$lib/firebase-admin'
 import type { KeyLike, JWTPayload } from 'jose/types'
@@ -41,7 +41,8 @@ export const post: RequestHandler<Locals> = async request => {
   }
 
   const publicKey = await importSPKI(testData.public_key, "RSA-OAEP-256")
-  const jws = await sign(form, await secret())
+  const secret = await getSecret() as KeyLike
+  const jws = await sign(form, secret)
   const jwe = await encrypt(jws, publicKey)
 
   await testRef.update({ results: jwe })
