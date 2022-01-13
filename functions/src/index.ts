@@ -23,7 +23,7 @@ export const docRelatedUser = functions.firestore
             const db = functions.app.admin.firestore();
             const codes = await db.collection("codes")
                 .where("test", "==", uid).get();
-            codes.forEach(code => code.ref.delete());
+            codes.forEach((code) => code.ref.delete());
           }
         }
     );
