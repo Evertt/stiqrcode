@@ -17,8 +17,8 @@ export const deleteUserRelatedDoc = functions.auth.user().onDelete(
       const db = functions.app.admin.firestore();
       db.collection(collection).doc(user.uid).delete().catch(ignore);
 
-      if (collection !== "tests") return;
-      deleteCodeDoc(user.uid);
+      if (collection === "tests")
+        deleteCodeDoc(user.uid);
     }
 );
 
@@ -30,11 +30,12 @@ export const docRelatedUser = functions.firestore
           const auth = functions.app.admin.auth();
           auth.deleteUser(uid).catch(ignore);
 
-          if (collection !== "tests") return;
-          deleteCodeDoc(uid);
+          if (collection === "tests")
+            deleteCodeDoc(uid);
         }
     );
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let ssrServerServer: any;
 export const ssrServer = functions.region("us-central1")
     .https.onRequest(async (request, response) => {
