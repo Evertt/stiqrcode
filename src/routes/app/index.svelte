@@ -6,9 +6,9 @@
 	import state from "$lib/state"
 	import { throttle } from "underscore"
 	import { writable } from "svelte/store"
-	import { db, user } from "$lib/firebase"
 	import { fade } from "svelte/transition"
 	import { importPKCS8 } from "jose/key/import"
+	import { db, user, auth } from "$lib/firebase"
 	import compactDecrypt from "jose/jwe/compact/decrypt"
 
 	const decode = TextDecoder.prototype.decode.bind(new TextDecoder())
@@ -22,6 +22,7 @@
 	const fetchResults = async () => {
 		if (!$user) return
 		$fetching = true
+		const { signOut } = await import("firebase/auth")
 		const { getDoc, doc, deleteDoc } = await import("firebase/firestore")
 
 		const test = await getDoc(doc($db, "tests", $user.uid))
@@ -36,8 +37,12 @@
 		}
 
 		if (!data || jwe) {
-			try { $user.delete() }
-			catch (_) {}
+			try {
+				await $user.getIdToken(true)
+				await $user.delete()
+			} catch (e) {
+				signOut($auth).catch(_=>{})
+			}
 			
 			message = jwe
 				? "Yes! Check history 👇"

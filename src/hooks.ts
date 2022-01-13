@@ -26,18 +26,36 @@ const authenticateUser: Handle<Locals> = async ({ request, resolve }) => {
 	return resolve(request)
 }
 
-const handleMethodSpoofing: Handle<Locals> = async ({ request, resolve }) => {
+const handleMethodSpoofing: Handle<Locals> = ({ request, resolve }) => {
 	// TODO https://github.com/sveltejs/kit/issues/1046
 	if (request.query.has('_method')) {
 		request.method = request.query.get('_method').toUpperCase()
 	}
 
-	const response = await resolve(request)
-
-	return response
+	return resolve(request)
 }
 
-export const handle = sequence(handleMethodSpoofing, authenticateUser)
+const checkForMobileBrowser: Handle<Locals> = ({ request, resolve }) => {
+	const toMatch = [
+		/iPod/i,
+		/iPhone/i,
+		/Android/i,
+		/BlackBerry/i,
+		/Windows Phone/i
+	]
+
+	request.locals.isMobile = toMatch.some(toMatchItem =>
+		request.headers["user-agent"].match(toMatchItem)
+	)
+
+	return resolve(request)
+}
+
+export const handle = sequence(
+	handleMethodSpoofing,
+	checkForMobileBrowser,
+	authenticateUser
+)
 
 export const getSession: GetSession<Locals, unknown, Session> = request => {
 	return { ...request.locals }

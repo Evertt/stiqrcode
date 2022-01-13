@@ -8,6 +8,7 @@ interface User {
 
 interface Locals {
 	user?: User
+  isMobile: boolean
 }
 
 interface Code {
