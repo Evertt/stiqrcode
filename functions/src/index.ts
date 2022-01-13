@@ -3,12 +3,13 @@ import * as functions from "firebase-functions";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
-const ignore = () => {}
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const ignore = () => {};
 
 const deleteCodeDoc = (uid: string) => functions.app.admin.firestore()
-  .collection("codes").where("test", "==", uid).get().then(
-    (codes) => codes.forEach((code) => code.ref.delete())
-  ).catch(ignore)
+    .collection("codes").where("test", "==", uid).get().then(
+        (codes) => codes.forEach((code) => code.ref.delete())
+    ).catch(ignore);
 
 export const deleteUserRelatedDoc = functions.auth.user().onDelete(
     async (user) => {
@@ -27,7 +28,7 @@ export const docRelatedUser = functions.firestore
           const {collection, uid} = context.params as { [key: string]: string };
           if (!collection.startsWith("test")) return;
           const auth = functions.app.admin.auth();
-          auth.deleteUser(uid).catch(() => {});
+          auth.deleteUser(uid).catch(ignore);
 
           if (collection !== "tests") return;
           deleteCodeDoc(uid);
