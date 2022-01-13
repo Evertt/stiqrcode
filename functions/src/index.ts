@@ -3,11 +3,21 @@ import * as functions from "firebase-functions";
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
+const ignore = () => {}
+
+const deleteCodeDoc = (uid: string) => functions.app.admin.firestore()
+  .collection("codes").where("test", "==", uid).get().then(
+    (codes) => codes.forEach((code) => code.ref.delete())
+  ).catch(ignore)
+
 export const deleteUserRelatedDoc = functions.auth.user().onDelete(
     async (user) => {
       const collection = user.email ? "testers" : "tests";
       const db = functions.app.admin.firestore();
-      await db.collection(collection).doc(user.uid).delete();
+      db.collection(collection).doc(user.uid).delete().catch(ignore);
+
+      if (collection !== "tests") return;
+      deleteCodeDoc(user.uid);
     }
 );
 
@@ -17,14 +27,10 @@ export const docRelatedUser = functions.firestore
           const {collection, uid} = context.params as { [key: string]: string };
           if (!collection.startsWith("test")) return;
           const auth = functions.app.admin.auth();
-          auth.deleteUser(uid);
+          auth.deleteUser(uid).catch(() => {});
 
-          if (collection === "tests") {
-            const db = functions.app.admin.firestore();
-            const codes = await db.collection("codes")
-                .where("test", "==", uid).get();
-            codes.forEach((code) => code.ref.delete());
-          }
+          if (collection !== "tests") return;
+          deleteCodeDoc(uid);
         }
     );
 
