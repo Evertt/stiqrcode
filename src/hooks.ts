@@ -44,8 +44,12 @@ const checkForMobileBrowser: Handle<Locals> = ({ request, resolve }) => {
 		/Windows Phone/i
 	]
 
+	const headers = request.headers
+	const userAgent = headers["User-Agent"]
+		|| headers["user-agent"] || ""
+
 	request.locals.isMobile = toMatch.some(toMatchItem =>
-		request.headers["user-agent"].match(toMatchItem)
+		userAgent.match(toMatchItem)
 	)
 
 	return resolve(request)
