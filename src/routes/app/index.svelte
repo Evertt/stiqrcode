@@ -75,7 +75,7 @@
 <div id="wrap" in:fade={{ duration: 400, delay: 200 }} out:fade={{ duration: 400 }}>
 	{#if message}
 		<span>{message}</span>
-	{:else if $user && !$state.code}
+	{:else if $user && !$user.email && !$state.code}
 		<button on:click={fetchResults} disabled={$fetching}>
 			{#if $fetching}
 				Checking...

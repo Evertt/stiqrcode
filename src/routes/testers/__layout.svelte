@@ -49,8 +49,16 @@
   }
 
   .vstack :global {
+    label, input {
+      @apply m-2 p-2 relative;
+    }
+
+    label select {
+      @apply h-full top-0 right-0 absolute;
+    }
+
     input {
-      @apply border rounded border-light-900 m-2 p-2;
+      @apply border rounded border-light-900;
     }
 
     button {
